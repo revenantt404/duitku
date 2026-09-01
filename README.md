@@ -7,23 +7,21 @@ Website manajemen uang: pemasukan, pengeluaran, multi-dompet, budgeting, tujuan 
 
 ---
 
-## 1. Jalankan Lokal (Mode Demo — Tanpa Supabase)
+## 1. Jalankan Lokal
 
-Mode demo pakai `localStorage` + data dummy, jadi bisa langsung jalan tanpa config DB.
+Isi `.env.local` sesuai `SETUP.md`, lalu jalankan:
 
 ```bash
 npm install
 npm run dev
-# buka http://localhost:3000
-# klik "Masuk" → "Buka Dashboard Demo Tanpa Login"
+# buka http://localhost:3000 → Masuk dengan Google atau email & password
 ```
 
-- Dashboard, Transaksi, Dompet, Anggaran, Tujuan semua berfungsi dengan data dummy yang bisa diedit.
-- Data tersimpan di `localStorage` (`duitku_demo_*`), hapus via DevTools → Application → Local Storage untuk reset.
+- Semua fitur (Dashboard, Transaksi, Dompet, Anggaran, Tujuan) langsung siap pakai setelah login.
 
 ---
 
-## 2. Setup Supabase (Untuk Data Beneran)
+## 2. Setup Supabase
 
 ### A. Buat Project Supabase
 1. https://supabase.com → New Project → simpan password DB.
@@ -79,7 +77,7 @@ app/
   page.tsx                 # Landing
   globals.css
   layout.tsx
-  (auth)/login/page.tsx    # Supabase Auth + Mode Demo
+  (auth)/login/page.tsx    # Supabase Auth (Google + email/password)
   auth/callback/route.ts   # OAuth callback
   (dashboard)/
     layout.tsx             # AppShell (sidebar + bottom nav)
@@ -131,9 +129,15 @@ Gratis: Vercel Hobby 100GB bandwidth, Supabase 500MB DB — cukup untuk 1000 use
 
 ## 7. Troubleshooting
 
-- **Build error `NEXT_PUBLIC_SUPABASE_URL` missing** → isi `.env.local` atau pakai Mode Demo (otomatis fallback ke localStorage).
+- **Build error `NEXT_PUBLIC_SUPABASE_URL` missing** → isi `.env.local` sesuai `SETUP.md`.
 - **Prisma `Can't reach database`** → cek `DATABASE_URL` pakai `?pgbouncer=true` untuk Vercel, `DIRECT_URL` untuk `db push`.
 - **Saldo tidak balance** → cek transaksi `TRANSFER` tidak double-count, dan `deletedAt` sudah difilter.
+
+---
+
+## 8. Catatan Developer (opsional — lokal tanpa Supabase)
+
+Kalau mau jalanin tanpa Supabase (misal di cafe tanpa setup env), fallback `localStorage` masih ada di kode (`lib/demo.ts`, `lib/demo-data.ts`). Cukup kosongkan `.env` → login dengan email/password apa saja akan masuk via `localStorage duitku_demo_*`. Data tersimpan per-browser, hapus via DevTools → Application → Local Storage untuk reset. **User produksi tidak melihat ini** — tidak ada banner/tombol demo di UI.
 
 ---
 

@@ -1,6 +1,6 @@
 # DuitKu — Setup 1 Halaman (copy-paste)
 
-> Mau langsung coba tanpa ribet? **Mode Demo** sudah jalan tanpa Supabase — data di browser. Setup di bawah cuma kalau mau **data per akun beneran** (login Gmail/magic-link + simpan di cloud).
+> Ikuti langkah di bawah untuk setup Supabase + Auth agar data tersimpan per akun di cloud.
 
 ## Opsi A — Paling gampang: Vercel (tanpa isi .env manual)
 
@@ -10,7 +10,7 @@
    Vercel otomatis isi `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` — gak perlu copy manual.
 4. Deploy. Selesai. `postinstall: prisma generate` sudah otomatis jalan di build.
 
-> Google login **opsional** — bisa nyusul. Login termudah sudah **Link email (magic-link)** tanpa setup Google Cloud.
+> Login utama: **Google** (disarankan) atau **email + password**. Google bisa setup belakangan — email/password tetap bisa dipakai.
 
 ## Opsi B — Lokal (butuh Supabase beneran)
 
@@ -34,15 +34,12 @@ npm run dev
 
 Tips `!` di chat ini: ketik `! npx prisma db push` atau `! npx tsx prisma/seed.ts` biar output langsung keliatan di sini.
 
-## Login — 3 cara (paling gampang dulu)
+## Login — 2 cara
 
 | Cara | Kapan pakai | Setup |
 |---|---|---|
-| **Link email** (default) | Paling gampang — tanpa Google | Gak perlu. User isi email → klik **Kirim link login** → cek inbox/spam → klik link (1x pakai). |
-| **Email + password** | Kalau mau password klasik | Gak perlu. Tab **Password** di `/login`. |
-| **Google** | Opsional, bisa nyusul | Supabase → Auth → Providers → Google ON → isi Client ID/Secret dari Google Cloud Console. |
-
-Mode Demo: kalau `.env` masih `placeholder`/`localhost:54321`, tombol **Masuk Demo** / **Kirim link** langsung masuk tanpa Supabase. Banner "Demo" muncul di atas.
+| **Google** (disarankan) | Paling cepat — 1 klik | Supabase → Auth → Providers → Google ON → isi Client ID/Secret dari Google Cloud Console. |
+| **Email + password** | Alternatif / fallback | Gak perlu setup tambahan. Langsung di `/login`. |
 
 ## Verifikasi build (wajib pass sebelum deploy)
 
@@ -58,11 +55,15 @@ Harus `✓ Compiled successfully` tanpa error. Warning `useEffect missing dep` s
 - [ ] `npx prisma db push` sukses
 - [ ] `npx tsx prisma/seed.ts` sukses (12 kategori sistem)
 - [ ] `npm run build` pass
-- [ ] Login coba: link email masuk → dashboard kebuka
-- [ ] (opsional) Google OAuth nyala kalau mau
+- [ ] Login coba: Google atau email/password masuk → dashboard kebuka
+- [ ] Google OAuth nyala (disarankan)
 
 ## Kalau error
 
 - `Can't reach database` → cek `DATABASE_URL`/`DIRECT_URL` + password benar, project Supabase gak di-pause.
 - `Invalid API key` → `NEXT_PUBLIC_SUPABASE_ANON_KEY` salah — copy lagi dari Settings → API.
-- Link email gak masuk → cek spam, atau di Supabase → Auth → Email Templates → pastikan redirect ke `https://duitku.vercel.app/auth/callback` (atau `http://localhost:3000/auth/callback` buat lokal).
+- Login gagal / redirect aneh → cek Supabase → Auth → URL Configuration → Site URL & Redirect URLs sudah include `https://duitku.vercel.app/auth/callback` (dan `http://localhost:3000/auth/callback` buat lokal).
+
+## Catatan Developer (opsional — lokal tanpa Supabase)
+
+Fallback `localStorage` masih ada di kode (`lib/demo.ts`, `lib/demo-data.ts`). Cek `README.md` bagian 8 untuk cara pakai. Tidak muncul di UI produksi.

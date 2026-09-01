@@ -10,16 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, LogOut, Sun, Moon, Camera, Trash2 } from "lucide-react";
+import { BottomNav, NAV } from "@/components/bottom-nav";
 
-const NAV = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/transaksi", label: "Transaksi" },
-  { href: "/dompet", label: "Dompet" },
-  { href: "/anggaran", label: "Anggaran" },
-  { href: "/tujuan", label: "Tujuan" },
-];
-
-/** Pastikan cuma URL valid (http/https/data:) yang dipakai — fallback ke null */
 function validAvatar(u: unknown): string | null {
   if (typeof u !== "string" || u.trim() === "") return null;
   const s = u.trim();
@@ -44,7 +36,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
   const pathname = usePathname();
   const router = useRouter();
   const [demo, setDemo] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const { resolved, setTheme } = useTheme();
@@ -59,17 +50,14 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
   const menuRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  // hydrate — per-user isolation (fix: pfp sama antar akun)
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
       const isPlaceholder = !url || url.includes("placeholder") || url.includes("localhost");
 
-      // bersihin key global lama yang bikin bocor antar akun (sekali)
       try {
         if (localStorage.getItem("duitku_profile_avatar") || localStorage.getItem("duitku_profile_name")) {
-          // migrasi: kalau ada demo_user, merge ke situ lalu hapus global
           const raw = localStorage.getItem("duitku_demo_user");
           if (raw) {
             try {
@@ -86,7 +74,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
         }
       } catch {}
 
-      // demo: baca dari duitku_demo_user per-browser (scoped ke 1 akun demo)
       try {
         const raw = localStorage.getItem("duitku_demo_user");
         if (raw) {
@@ -100,7 +87,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
         }
       } catch {}
 
-      // supabase: fetch fresh per login (jangan pakai cache global)
       if (!isPlaceholder) {
         try {
           const supabase = createClient();
@@ -115,19 +101,16 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
             if (nm) setProfileName(nm);
             else if (u.email) setProfileName(u.email.split("@")[0]);
 
-            // auto-clear base64 lama di metadata (bikin cookie 431) — jangan ditunggu
             const curAvRaw = meta.avatar_url || meta.avatar || null;
             if (typeof curAvRaw === "string" && curAvRaw.startsWith("data:")) {
               supabase.auth.updateUser({ data: { avatar_url: null } }).catch(() => {});
             }
 
-            // avatar prioritas: localStorage per-email (custom upload) > google picture
             let resolvedAv: string | null = null;
             const vLocal = validAvatar(localStorage.getItem(`duitku_avatar_${u.email || "anon"}`));
             if (vLocal) {
               resolvedAv = vLocal;
             } else {
-              // coba semua sumber foto Google yang mungkin
               const candidates = [
                 meta.avatar_url,
                 meta.avatar,
@@ -141,7 +124,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
                 if (v && !v.startsWith("data:")) { resolvedAv = v; break; }
               }
             }
-            // nama tetap bisa dari /api/profile (DB) — override kalau ada
             try {
               const r = await fetch("/api/profile", { cache: "no-store" });
               if (r.ok) {
@@ -149,10 +131,8 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
                 if (j?.name) setProfileName(j.name);
               }
             } catch {}
-            // selalu set (null = fallback User icon) biar gak nyangkut avatar akun sebelumnya
             setProfileAvatar(resolvedAv);
           } else if (!cancelled) {
-            // tidak ada session supabase (misal logout) — kosongin biar gak nyangkut
             setProfileAvatar(null);
           }
         } catch {}
@@ -160,7 +140,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
     }
     load();
     return () => { cancelled = true; };
-    // re-run saat email ganti (ganti akun)
   }, [email]);
 
   useEffect(() => {
@@ -182,13 +161,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
     return () => document.removeEventListener("mousedown", onDown);
   }, [profileMenuOpen]);
 
-  useEffect(() => {
-    if (drawerOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
-  }, [drawerOpen]);
-
-  useEffect(() => { setProfileMenuOpen(false); setDrawerOpen(false); }, [pathname]);
+  useEffect(() => { setProfileMenuOpen(false); }, [pathname]);
 
   async function handleLogout() {
     setProfileMenuOpen(false);
@@ -203,7 +176,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
       const supabase = createClient();
       await supabase.auth.signOut();
     }
-    // reset state biar pfp gak kebawa ke akun berikutnya
     setProfileName("");
     setProfileAvatar(null);
     router.push("/login");
@@ -234,15 +206,11 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
         setProfileName(name);
         setProfileAvatar(nextAvatar);
       } else {
-        // avatar hanya disimpan di localStorage (per-email) — jangan kirim ke Supabase
-        // metadata, karena bisa bikin session cookie kebesaran (HTTP 431).
-        // Nama saja yang di-sync ke Supabase auth metadata.
         try {
           localStorage.setItem(`duitku_avatar_${email || "anon"}`, nextAvatar || "");
         } catch {}
 
         const supabase = createClient();
-        // bersihin avatar_url base64 lama di metadata (bikin cookie 431) — set null
         const { data: { user: curU } } = await supabase.auth.getUser();
         const curAv = (curU?.user_metadata as any)?.avatar_url;
         const needClear = typeof curAv === "string" && curAv.startsWith("data:");
@@ -304,7 +272,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
           background: isDark ? "#1d1d1d" : "#ffffff",
           color: isDark ? "#e9e6e2" : "#1a1a1a",
           border: `1px solid ${isDark ? "#2a2a2a" : "#e6e3df"}`,
-          boxShadow: "none",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
           top: 56,
           right: 16,
         }}
@@ -322,7 +290,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[13px] font-semibold leading-tight truncate tracking-tight">{displayName}</div>
-            <div className="text-[11px] leading-tight truncate text-mute dark:text-[#a7a39d]">{displayEmail} {demo && "· Demo"}</div>
+            <div className="text-[11px] leading-tight truncate text-mute dark:text-[#a7a39d]">{displayEmail}</div>
           </div>
         </div>
 
@@ -464,82 +432,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
         </DialogContent>
       </Dialog>
 
-      <div
-        id="mobileOverlay"
-        hidden={!drawerOpen}
-        onClick={() => setDrawerOpen(false)}
-        style={{ display: drawerOpen ? "block" : "none", position: "fixed", inset: 0, background: "rgba(0,0,0,.32)", zIndex: 9998 }}
-      />
-      <nav
-        id="mobileDrawer"
-        hidden={!drawerOpen}
-        aria-label="Menu"
-        className={drawerOpen ? "open" : ""}
-        style={{
-          display: drawerOpen ? "flex" : "none",
-          flexDirection: "column",
-          position: "fixed",
-          top: 0,
-          right: 0,
-          width: 280,
-          maxWidth: "82vw",
-          height: "100dvh",
-          background: isDark ? "#1d1d1d" : "#faf9f7",
-          zIndex: 9999,
-          transform: drawerOpen ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 220ms ease",
-          overflowY: "auto",
-          padding: 20,
-          boxShadow: "none",
-        }}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <Link href="/dashboard" onClick={() => setDrawerOpen(false)} className="text-[16px] font-[500] tracking-tight">duitku.</Link>
-          <button
-            type="button"
-            aria-label="Tutup menu"
-            onClick={() => setDrawerOpen(false)}
-            className="h-[38px] w-[38px] rounded-full border hairline grid place-items-center bg-transparent"
-          >
-            ✕
-          </button>
-        </div>
-        {NAV.map((n) => (
-          <Link
-            key={n.href}
-            href={n.href}
-            onClick={() => setDrawerOpen(false)}
-            className={cn("flex items-center min-h-[44px] text-[15px]", isActive(n.href) ? "text-ink dark:text-[#e9e6e2] font-[500]" : "text-mute dark:text-[#a7a39d]")}
-          >
-            {n.label}
-          </Link>
-        ))}
-        <div className="mt-4 border-t hairline pt-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full overflow-hidden border hairline bg-white dark:bg-[#1d1d1d] grid place-items-center shrink-0">
-              {profileAvatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profileAvatar} alt="Avatar" className="h-full w-full object-cover" />
-              ) : (
-                <span className="h-full w-full grid place-items-center bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#8f8b85]">
-                  <User className="h-4 w-4" strokeWidth={1.75} />
-                </span>
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="text-[13px] font-medium truncate">{displayName}</div>
-              <div className="text-[11px] text-mute dark:text-[#a7a39d] truncate">{displayEmail}</div>
-            </div>
-          </div>
-          <button onClick={() => { setDrawerOpen(false); setProfileDialogOpen(true); }} className="flex items-center gap-2 text-[13px] font-medium">
-            <User className="h-4 w-4" strokeWidth={1.75} /> Profile Settings
-          </button>
-          <button onClick={handleLogout} className="flex items-center gap-2 text-[13px] font-medium text-[#b42318] dark:text-[#fca5a5]">
-            <LogOut className="h-4 w-4" strokeWidth={1.75} /> Logout
-          </button>
-        </div>
-      </nav>
-
       <header className="max-w-[720px] mx-auto px-6 md:px-0 pt-10 md:pt-16 pb-8">
         <div className="flex items-center justify-between gap-4">
           <Link href="/dashboard" className="text-[18px] tracking-tight font-[500]">duitku.</Link>
@@ -551,17 +443,6 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
                 </Link>
               ))}
             </nav>
-            <button
-              id="mobileDrawerToggle"
-              type="button"
-              aria-label="Buka menu"
-              aria-expanded={drawerOpen}
-              aria-controls="mobileDrawer"
-              onClick={() => setDrawerOpen((v) => !v)}
-              className="inline-flex md:hidden h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full border hairline bg-transparent"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" aria-hidden="true" className="h-[18px] w-[18px]"><path d="M5 8h14M5 12h14M5 16h14" /></svg>
-            </button>
             <button
               ref={btnRef}
               id="profileToggle"
@@ -586,24 +467,15 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
         </div>
       </header>
 
-      {demo && (
-        <div className="max-w-[720px] mx-auto px-6 md:px-0 -mt-2 mb-6">
-          <div className="rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] px-4 py-3 flex items-center justify-between gap-3 text-[12.5px] leading-relaxed">
-            <span className="text-mute dark:text-[#a7a39d]">
-              Mode Demo — data di <code className="bg-white dark:bg-[#141414] border hairline rounded px-1 py-0.5">localStorage</code> (per browser). Login Supabase untuk data per akun.
-            </span>
-            <Link href="/login" className="hidden sm:inline underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a] shrink-0">Login</Link>
-          </div>
-        </div>
-      )}
-
-      <main className="max-w-[720px] mx-auto px-6 md:px-0 pb-24">
+      <main className="max-w-[720px] mx-auto px-6 md:px-0 pb-[96px] md:pb-24">
         <div className="page-in">{children}</div>
         <footer className="border-t hairline mt-16 pt-8 flex flex-col sm:flex-row sm:justify-between gap-2">
           <p className="kicker">© {new Date().getFullYear()} DuitKu · paper/ink/hairline</p>
           <p className="text-[12.5px] text-mute dark:text-[#7f7b75] truncate">{displayEmail}</p>
         </footer>
       </main>
+
+      <BottomNav />
     </div>
   );
 }

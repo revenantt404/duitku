@@ -14,7 +14,7 @@ export function MonthlyBar({ data }: { data: { month: string; income: number; ex
       </div>
     );
   return (
-    <div className="h-[260px] w-full">
+    <div className="h-[180px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} barCategoryGap={22}>
           <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#2a2a2a" : "#e6e3df"} vertical={false} />

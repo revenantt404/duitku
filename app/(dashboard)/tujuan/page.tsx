@@ -117,7 +117,7 @@ export default function TujuanPage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Tujuan</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">{isLoading ? "Memuat…" : `${goals.length} tujuan · `}<span className="num">{formatRupiahCompact(totalCurrent)} / {formatRupiahCompact(totalTarget)}</span> {goalsHook.isDemo ? "· Demo" : ""}</p>
+          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">{isLoading ? "Memuat…" : `${goals.length} tujuan · `}<span className="num">{formatRupiahCompact(totalCurrent)} / {formatRupiahCompact(totalTarget)}</span></p>
         </div>
         <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah</Button>
       </div>
@@ -186,7 +186,7 @@ export default function TujuanPage() {
       </div>
 
       {!isLoading && goals.length === 0 && (
-        <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-1">Belum ada tujuan</div><div className="text-[12px] text-mute dark:text-[#8f8b85]">Bikin target nabung biar ada alasan buka DuitKu</div></CardContent></Card>
+        <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline"><Target className="h-5 w-5" strokeWidth={1.75} /></div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-1">Belum ada tujuan</div><div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Bikin target nabung biar ada alasan buka DuitKu</div><Button size="sm" className="mt-4" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah tujuan</Button></CardContent></Card>
       )}
       {goalsHook.error && <div className="text-[12px] text-[#b42318] dark:text-[#fca5a5]">{goalsHook.error}</div>}
 
@@ -198,55 +198,63 @@ export default function TujuanPage() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent onClose={() => setOpen(false)} className="max-w-[420px]">
-          <DialogHeader><DialogTitle>{editing ? "Edit Tujuan" : "Tambah Tujuan"}</DialogTitle></DialogHeader>
-          <form onSubmit={form.handleSubmit(handleSubmit as any)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Nama Tujuan</Label>
-              <Input placeholder="iPhone 15, Dana Darurat..." {...form.register("name")} />
-              {form.formState.errors.name && <p className="text-xs font-medium text-ink dark:text-[#e9e6e2]">{form.formState.errors.name.message}</p>}
+        <DialogContent onClose={() => setOpen(false)} className="max-w-[420px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
+          <div className="shrink-0 px-6 pt-6 pb-3">
+            <DialogHeader className="mb-0"><DialogTitle>{editing ? "Edit Tujuan" : "Tambah Tujuan"}</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">{editing ? "Ubah target & deadline." : "Bikin target nabung — pecah besar jadi kecil."}</p></DialogHeader>
+          </div>
+          <form onSubmit={form.handleSubmit(handleSubmit as any)} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-auto overscroll-contain px-6 space-y-4 pb-4">
+              <div className="space-y-1.5">
+                <Label>Nama Tujuan</Label>
+                <Input placeholder="iPhone 15, Dana Darurat..." {...form.register("name")} className="h-11" autoFocus />
+                {form.formState.errors.name && <p className="text-xs font-medium text-ink dark:text-[#e9e6e2]">{form.formState.errors.name.message}</p>}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Target — Rp</Label>
+                  <RupiahInput
+                    value={typeof form.watch("targetAmount") === "number" ? (form.watch("targetAmount") as number) : undefined}
+                    onValueChange={(v) => { form.setValue("targetAmount", v as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("targetAmount"); }}
+                    className="h-11 text-[13px] font-semibold num"
+                    placeholder="0"
+                    inputMode="numeric"
+                    aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.targetAmount)}
+                  />
+                  {form.formState.isSubmitted && form.formState.errors.targetAmount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.targetAmount.message as string}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Terkumpul — Rp</Label>
+                  <RupiahInput
+                    value={typeof form.watch("currentAmount") === "number" ? (form.watch("currentAmount") as number) : undefined}
+                    onValueChange={(v) => { form.setValue("currentAmount", (v ?? 0) as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("currentAmount"); }}
+                    className="h-11 text-[13px] font-semibold num"
+                    placeholder="0"
+                    inputMode="numeric"
+                    aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.currentAmount)}
+                  />
+                  {form.formState.isSubmitted && form.formState.errors.currentAmount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.currentAmount.message as string}</p>}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Deadline — opsional</Label>
+                  <DateInput
+                    value={form.watch("deadline") as any}
+                    onValueChange={(v) => form.setValue("deadline", v ? (new Date(`${v}T00:00:00`) as any) : (null as any))}
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Warna</Label>
+                  <Input type="color" className="h-11 p-1" {...form.register("color")} />
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Target — Rp</Label>
-                <RupiahInput
-                  value={typeof form.watch("targetAmount") === "number" ? (form.watch("targetAmount") as number) : undefined}
-                  onValueChange={(v) => { form.setValue("targetAmount", v as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("targetAmount"); }}
-                  className="h-9 text-[13px] font-semibold num"
-                  placeholder="0"
-                  aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.targetAmount)}
-                />
-                {form.formState.isSubmitted && form.formState.errors.targetAmount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.targetAmount.message as string}</p>}
+            <div className="shrink-0 sticky bottom-0 bg-white dark:bg-[#1d1d1d] border-t hairline px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] mt-2">
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1 h-11" onClick={() => setOpen(false)}>Batal</Button>
+                <Button type="submit" className="flex-1 h-11">{editing ? "Simpan" : "Tambah"}</Button>
               </div>
-              <div className="space-y-1.5">
-                <Label>Terkumpul — Rp</Label>
-                <RupiahInput
-                  value={typeof form.watch("currentAmount") === "number" ? (form.watch("currentAmount") as number) : undefined}
-                  onValueChange={(v) => { form.setValue("currentAmount", (v ?? 0) as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("currentAmount"); }}
-                  className="h-9 text-[13px] font-semibold num"
-                  placeholder="0"
-                  aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.currentAmount)}
-                />
-                {form.formState.isSubmitted && form.formState.errors.currentAmount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.currentAmount.message as string}</p>}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Deadline — opsional</Label>
-                <DateInput
-                  value={form.watch("deadline") as any}
-                  onValueChange={(v) => form.setValue("deadline", v ? (new Date(`${v}T00:00:00`) as any) : (null as any))}
-                  className="h-10"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Warna</Label>
-                <Input type="color" className="h-9 p-1" {...form.register("color")} />
-              </div>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>Batal</Button>
-              <Button type="submit" className="flex-1">{editing ? "Simpan" : "Tambah"}</Button>
             </div>
           </form>
         </DialogContent>

@@ -14,7 +14,7 @@ import { formatRupiah, formatDateShort, cn } from "@/lib/utils";
 import { RupiahInput } from "@/components/ui/rupiah-input";
 import { DateInput } from "@/components/ui/date-input";
 import { useToast } from "@/components/ui/toast";
-import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, Trash2, Search, Pencil, Copy, X } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, Trash2, Search, Pencil, Copy, X, Wallet } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { transactionSchema, type TransactionInput } from "@/lib/validations";
@@ -228,7 +228,7 @@ export default function TransaksiPage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Transaksi</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Filter per bulan · cari · hapus · edit 2-tap {txHook.isDemo ? "· Demo" : ""}</p>
+          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Filter per bulan · cari · hapus · edit 2-tap</p>
         </div>
         <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} />
       </div>
@@ -357,10 +357,10 @@ export default function TransaksiPage() {
       </Card>
 
       <Dialog open={!!editTx} onOpenChange={(o) => { if (!o) setEditTx(null); }}>
-        <DialogContent onClose={() => setEditTx(null)} className="max-w-[440px]">
-          <DialogHeader><DialogTitle>Edit transaksi</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">Ubah nominal/kategori/dompet — 2-tap selesai.</p></DialogHeader>
-          <form onSubmit={editForm.handleSubmit(handleEditSave as any)} className="space-y-4">
-            <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline">
+        <DialogContent onClose={() => setEditTx(null)} className="max-w-[440px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
+          <div className="shrink-0 px-6 pt-6 pb-3">
+            <DialogHeader className="mb-0"><DialogTitle>Edit transaksi</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">Ubah nominal/kategori/dompet — 2-tap selesai.</p></DialogHeader>
+            <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
               {[
                 { v: "EXPENSE", label: "Keluar" },
                 { v: "INCOME", label: "Masuk" },
@@ -369,64 +369,95 @@ export default function TransaksiPage() {
                 <button key={t.v} type="button" onClick={() => { editForm.setValue("type", t.v as any); editForm.setValue("categoryId", ""); editForm.setValue("toWalletId", ""); }} className={cn("press rounded-full px-3.5 py-1.5 text-xs font-medium", editType === t.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]")}>{t.label}</button>
               ))}
             </div>
-            <div className="space-y-1.5">
-              <Label>Nominal — Rp</Label>
-              <RupiahInput
-                value={typeof editForm.watch("amount") === "number" ? editForm.watch("amount") as number : undefined}
-                onValueChange={(v) => { editForm.setValue("amount", v as any, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("amount"); }}
-                className="h-11 text-[16px] font-semibold tracking-tight num"
-                aria-invalid={!!(editForm.formState.isSubmitted && editForm.formState.errors.amount)}
-              />
-              {typeof editForm.watch("amount") === "number" && (editForm.watch("amount") as number) > 0 && (
-                <div className="text-[11px] text-mute dark:text-[#8f8b85] num">{formatRupiah(editForm.watch("amount") as number)}</div>
-              )}
-              {editForm.formState.isSubmitted && editForm.formState.errors.amount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{editForm.formState.errors.amount.message as string}</p>}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          </div>
+          <form onSubmit={editForm.handleSubmit(handleEditSave as any)} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-auto overscroll-contain px-6 space-y-4 pb-4">
               <div className="space-y-1.5">
-                <Label>Dompet</Label>
-                <Select value={editForm.watch("walletId")} onChange={(e) => { editForm.setValue("walletId", e.target.value, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }}>
-                  <option value="">Pilih dompet</option>
-                  {wallets.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
-                </Select>
-                {editForm.formState.isSubmitted && (editForm.formState.errors as any).walletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).walletId.message as string}</p>}
+                <Label>Nominal — Rp</Label>
+                <RupiahInput
+                  value={typeof editForm.watch("amount") === "number" ? editForm.watch("amount") as number : undefined}
+                  onValueChange={(v) => { editForm.setValue("amount", v as any, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("amount"); }}
+                  className="h-11 text-[16px] font-semibold tracking-tight num"
+                  inputMode="numeric"
+                  aria-invalid={!!(editForm.formState.isSubmitted && editForm.formState.errors.amount)}
+                />
+                {typeof editForm.watch("amount") === "number" && (editForm.watch("amount") as number) > 0 && (
+                  <div className="text-[11px] text-mute dark:text-[#8f8b85] num">{formatRupiah(editForm.watch("amount") as number)}</div>
+                )}
+                {editForm.formState.isSubmitted && editForm.formState.errors.amount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{editForm.formState.errors.amount.message as string}</p>}
               </div>
-              {editType === "TRANSFER" ? (
+
+              {editType !== "TRANSFER" && (
                 <div className="space-y-1.5">
-                  <Label>Tujuan</Label>
-                  <Select value={editForm.watch("toWalletId") || ""} onChange={(e) => { editForm.setValue("toWalletId", e.target.value, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("toWalletId"); }}>
-                    <option value="">Pilih tujuan</option>
-                    {wallets.filter((w) => w.id !== editWalletId).map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
-                  </Select>
-                  {editForm.formState.isSubmitted && (editForm.formState.errors as any).toWalletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).toWalletId.message as string}</p>}
+                  <Label>Kategori</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {categories.filter((c) => c.type === editType).map((c) => {
+                      const active = editForm.watch("categoryId") === c.id;
+                      return (
+                        <button key={c.id} type="button" onClick={() => { editForm.setValue("categoryId", c.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("categoryId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-[#f3f1ec] dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]")}>
+                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: active ? "#fff" : c.color }} aria-hidden />
+                          <span className="text-[12.5px] font-medium leading-none truncate">{c.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {categories.filter((c) => c.type === editType).length === 0 && <p className="text-[12px] text-mute">Belum ada kategori.</p>}
+                  {editForm.formState.isSubmitted && (editForm.formState.errors as any).categoryId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).categoryId.message as string}</p>}
+                  <Select value={editForm.watch("categoryId") || ""} onChange={(e) => { editForm.setValue("categoryId", e.target.value, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("categoryId"); }} className="sr-only" aria-hidden tabIndex={-1}><option value="">Pilih kategori</option>{categories.filter((c) => c.type === editType).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</Select>
+                </div>
+              )}
+
+              {editType === "TRANSFER" ? (
+                <div className="grid gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Dari dompet</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {wallets.map((w) => {
+                        const active = editForm.watch("walletId") === w.id;
+                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} /><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                      })}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Tujuan</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {wallets.filter((w) => w.id !== editWalletId).map((w) => {
+                        const active = editForm.watch("toWalletId") === w.id;
+                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("toWalletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("toWalletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} /><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                      })}
+                    </div>
+                    {editForm.formState.isSubmitted && (editForm.formState.errors as any).toWalletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).toWalletId.message as string}</p>}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  <Label>Kategori</Label>
-                  <Select value={editForm.watch("categoryId") || ""} onChange={(e) => { editForm.setValue("categoryId", e.target.value, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("categoryId"); }}>
-                    <option value="">Pilih kategori</option>
-                    {categories.filter((c) => c.type === editType).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </Select>
-                  {editForm.formState.isSubmitted && (editForm.formState.errors as any).categoryId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).categoryId.message as string}</p>}
+                  <Label>Dompet</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {wallets.map((w) => {
+                      const active = editForm.watch("walletId") === w.id;
+                      return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} /><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                    })}
+                  </div>
+                  {editForm.formState.isSubmitted && (editForm.formState.errors as any).walletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).walletId.message as string}</p>}
+                  <Select value={editForm.watch("walletId")} onChange={(e) => { editForm.setValue("walletId", e.target.value, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className="sr-only" aria-hidden tabIndex={-1}><option value="">Pilih dompet</option>{wallets.map((w) => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</Select>
                 </div>
               )}
+
+              <div className="space-y-1.5">
+                <Label>Tanggal</Label>
+                <DateInput value={editForm.watch("date") as any} onValueChange={(v) => editForm.setValue("date", v ? (new Date(`${v}T00:00:00`) as any) : (new Date() as any))} className="h-11" />
+                <p className="text-[11px] text-mute dark:text-[#8f8b85]">WIB</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Catatan — opsional</Label>
+                <Textarea {...editForm.register("description")} maxLength={100} />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Catatan — opsional</Label>
-              <Textarea {...editForm.register("description")} maxLength={100} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Tanggal</Label>
-              <DateInput
-                value={editForm.watch("date") as any}
-                onValueChange={(v) => editForm.setValue("date", v ? (new Date(`${v}T00:00:00`) as any) : (new Date() as any))}
-                className="h-10"
-              />
-              <p className="text-[11px] text-mute dark:text-[#8f8b85]">WIB</p>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setEditTx(null)}>Batal</Button>
-              <Button type="submit" className="flex-1">Simpan perubahan</Button>
+            <div className="shrink-0 sticky bottom-0 bg-white dark:bg-[#1d1d1d] border-t hairline px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] mt-2">
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1 h-11" onClick={() => setEditTx(null)}>Batal</Button>
+                <Button type="submit" className="flex-1 h-11">Simpan perubahan</Button>
+              </div>
             </div>
           </form>
         </DialogContent>

@@ -21,18 +21,14 @@ export default function LandingPage() {
       <main className="max-w-[720px] mx-auto px-6 md:px-0 pb-24">
         {/* Hero */}
         <section className="border-t hairline pt-10 sm:pt-14 pb-10">
-          <div className="inline-flex items-center gap-2 text-[12px] font-medium text-mute dark:text-[#a7a39d] bg-[#f3f1ec] dark:bg-[#1d1d1d] border hairline px-3 py-1 rounded-full">
-            <span className="h-1.5 w-1.5 rounded-full bg-ink dark:bg-[#e9e6e2]" /> Website — bukan aplikasi install
-          </div>
-          <h1 className="mt-4 font-display text-[36px] sm:text-[52px] font-[300] tracking-[-0.03em] leading-[1.02] text-ink dark:text-[#e9e6e2]">
+          <h1 className="font-display text-[36px] sm:text-[52px] font-[300] tracking-[-0.03em] leading-[1.02] text-ink dark:text-[#e9e6e2]">
             Catat duit, <span className="italic font-[300]">jelas hidup.</span>
           </h1>
           <p className="mt-3 text-[15px] leading-[1.72] text-mute dark:text-[#a7a39d] max-w-[48ch]">
             DuitKu — 10 detik per transaksi. Multi-dompet, budgeting, grafik jujur. Warm paper, tegas, tanpa distraksi.
           </p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <Link href="/login" className="w-full sm:w-auto"><Button className="w-full sm:w-auto h-11 px-6 text-[14px]">Lanjut — Gratis <ArrowRight className="h-4 w-4" strokeWidth={1.75} /></Button></Link>
-            <Link href="/dashboard" className="w-full sm:w-auto"><Button variant="outline" className="w-full sm:w-auto h-11 px-6">Lihat Demo</Button></Link>
+          <div className="mt-6">
+            <Link href="/login"><Button className="h-11 px-6 text-[14px]">Lanjut — Gratis <ArrowRight className="h-4 w-4" strokeWidth={1.75} /></Button></Link>
           </div>
           <p className="mt-3 text-[12px] text-mute dark:text-[#8f8b85]">Google login · RLS per user · Vercel</p>
 

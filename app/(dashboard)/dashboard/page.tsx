@@ -153,12 +153,12 @@ export default function DashboardPage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Dashboard</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">{monthLabel} · total saldo semua dompet {walletsHook.isDemo ? "· Demo" : ""}</p>
+          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">{monthLabel} · total saldo semua dompet</p>
         </div>
         <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} fab />
       </div>
 
-      <Card className="rounded-[18px] overflow-hidden">
+      <Card className="rounded-[18px] overflow-hidden shadow-sm">
         <CardContent className="p-6">
           <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Total Saldo</div>
           <div className="mt-1 text-[30px] font-semibold tracking-tight leading-none num text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiah(totalSaldo)}</div>

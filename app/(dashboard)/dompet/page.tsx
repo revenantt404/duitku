@@ -112,7 +112,7 @@ export default function DompetPage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Dompet</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Multi-dompet · saldo dipisah · transfer tidak merusak laporan {walletsHook.isDemo ? "· Demo" : ""}</p>
+          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Multi-dompet · saldo dipisah · transfer tidak merusak laporan</p>
         </div>
         <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah</Button>
       </div>
@@ -140,60 +140,67 @@ export default function DompetPage() {
       </div>
 
       {wallets.length === 0 && !isLoading && (
-        <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="kicker mb-2">Kosong</div><div className="text-[13px] text-mute dark:text-[#a7a39d]"><Wallet className="h-8 w-8 mx-auto mb-2 text-mute dark:text-[#8f8b85]" strokeWidth={1.75} />Belum ada dompet. Tambah minimal 1 untuk mulai.</div></CardContent></Card>
+        <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline"><Wallet className="h-5 w-5" strokeWidth={1.75} /></div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Belum ada dompet</div><div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Tambah minimal 1 untuk mulai — Cash, BCA, GoPay, dll.</div><Button size="sm" className="mt-4" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah dompet</Button></CardContent></Card>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent onClose={() => setOpen(false)} className="max-w-[420px]">
-          <DialogHeader><DialogTitle>{editing ? "Edit Dompet" : "Tambah Dompet"}</DialogTitle></DialogHeader>
-          <form onSubmit={form.handleSubmit(handleSubmit as any)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Nama Dompet</Label>
-              <Input placeholder="BCA, Cash, GoPay..." {...form.register("name")} />
-              {form.formState.errors.name && <p className="text-xs text-ink dark:text-[#e9e6e2] font-medium">{form.formState.errors.name.message}</p>}
+        <DialogContent onClose={() => setOpen(false)} className="max-w-[420px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
+          <div className="shrink-0 px-6 pt-6 pb-3">
+            <DialogHeader className="mb-0"><DialogTitle>{editing ? "Edit Dompet" : "Tambah Dompet"}</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">{editing ? "Ubah nama/tipe/saldo awal." : "Bikin dompet baru — saldo awal bisa 0."}</p></DialogHeader>
+          </div>
+          <form onSubmit={form.handleSubmit(handleSubmit as any)} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-auto overscroll-contain px-6 space-y-4 pb-4">
+              <div className="space-y-1.5">
+                <Label>Nama Dompet</Label>
+                <Input placeholder="BCA, Cash, GoPay..." {...form.register("name")} className="h-11" autoFocus />
+                {form.formState.errors.name && <p className="text-xs text-ink dark:text-[#e9e6e2] font-medium">{form.formState.errors.name.message}</p>}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Tipe</Label>
+                  <Select value={form.watch("type")} onChange={(e) => form.setValue("type", e.target.value as any)} className="h-11">
+                    <SelectItem value="CASH">Cash</SelectItem>
+                    <SelectItem value="BANK">Bank</SelectItem>
+                    <SelectItem value="E_WALLET">eWallet</SelectItem>
+                    <SelectItem value="INVESTMENT">Investasi</SelectItem>
+                    <SelectItem value="OTHER">Lainnya</SelectItem>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Warna</Label>
+                  <Input type="color" className="h-11 p-1" {...form.register("color")} />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Icon</Label>
+                  <Select value={form.watch("icon")} onChange={(e) => form.setValue("icon", e.target.value)} className="h-11">
+                    <SelectItem value="wallet">wallet</SelectItem>
+                    <SelectItem value="landmark">landmark</SelectItem>
+                    <SelectItem value="smartphone">smartphone</SelectItem>
+                    <SelectItem value="trending-up">trending-up</SelectItem>
+                    <SelectItem value="package">package</SelectItem>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Saldo Awal — Rp</Label>
+                  <RupiahInput
+                    value={typeof form.watch("initialBalance") === "number" ? (form.watch("initialBalance") as number) : undefined}
+                    onValueChange={(v) => { form.setValue("initialBalance", (v ?? 0) as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("initialBalance"); }}
+                    className="h-11 text-[13px] font-semibold num"
+                    inputMode="numeric"
+                    placeholder="0"
+                    aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.initialBalance)}
+                  />
+                  {form.formState.isSubmitted && form.formState.errors.initialBalance && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.initialBalance.message as string}</p>}
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Tipe</Label>
-                <Select value={form.watch("type")} onChange={(e) => form.setValue("type", e.target.value as any)}>
-                  <SelectItem value="CASH">Cash</SelectItem>
-                  <SelectItem value="BANK">Bank</SelectItem>
-                  <SelectItem value="E_WALLET">eWallet</SelectItem>
-                  <SelectItem value="INVESTMENT">Investasi</SelectItem>
-                  <SelectItem value="OTHER">Lainnya</SelectItem>
-                </Select>
+            <div className="shrink-0 sticky bottom-0 bg-white dark:bg-[#1d1d1d] border-t hairline px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] mt-2">
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1 h-11" onClick={() => setOpen(false)}>Batal</Button>
+                <Button type="submit" className="flex-1 h-11">{editing ? "Simpan" : "Tambah"}</Button>
               </div>
-              <div className="space-y-1.5">
-                <Label>Warna</Label>
-                <Input type="color" className="h-9 p-1" {...form.register("color")} />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Icon</Label>
-                <Select value={form.watch("icon")} onChange={(e) => form.setValue("icon", e.target.value)}>
-                  <SelectItem value="wallet">wallet</SelectItem>
-                  <SelectItem value="landmark">landmark</SelectItem>
-                  <SelectItem value="smartphone">smartphone</SelectItem>
-                  <SelectItem value="trending-up">trending-up</SelectItem>
-                  <SelectItem value="package">package</SelectItem>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Saldo Awal — Rp</Label>
-                <RupiahInput
-                  value={typeof form.watch("initialBalance") === "number" ? (form.watch("initialBalance") as number) : undefined}
-                  onValueChange={(v) => { form.setValue("initialBalance", (v ?? 0) as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("initialBalance"); }}
-                  className="h-9 text-[13px] font-semibold num"
-                  placeholder="0"
-                  aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.initialBalance)}
-                />
-                {form.formState.isSubmitted && form.formState.errors.initialBalance && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.initialBalance.message as string}</p>}
-              </div>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>Batal</Button>
-              <Button type="submit" className="flex-1">{editing ? "Simpan" : "Tambah"}</Button>
             </div>
           </form>
         </DialogContent>

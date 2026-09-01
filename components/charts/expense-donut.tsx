@@ -17,7 +17,7 @@ export function ExpenseDonut({ data }: { data: { name: string; value: number; co
     );
   const filled = data.map((d, i) => ({ ...d, color: PALETTE[i % PALETTE.length] }));
   return (
-    <div className="h-[260px] w-full">
+    <div className="h-[180px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie data={filled} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={62} outerRadius={90} paddingAngle={3} stroke={isDark ? "#1d1d1d" : "#fff"} strokeWidth={2}>

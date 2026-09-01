@@ -111,7 +111,7 @@ export default function AnggaranPage() {
         <div>
           <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Anggaran</h1>
           <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">
-            {new Date(curYear, curMonth - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" })} · limit per kategori {budgetsHook.isDemo ? "· Demo" : ""}
+            {new Date(curYear, curMonth - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" })} · limit per kategori
           </p>
         </div>
         <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah</Button>
@@ -156,7 +156,7 @@ export default function AnggaranPage() {
           </Card>
         );})}
         {!isLoading && rows.length === 0 && (
-          <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-1">Belum ada anggaran bulan ini</div><div className="text-[12px] text-mute dark:text-[#8f8b85]">Tambah limit untuk Makan, Transport, dll</div></CardContent></Card>
+          <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-1">Belum ada anggaran bulan ini</div><div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Tambah limit untuk Makan, Transport, dll</div><Button size="sm" className="mt-4" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah anggaran</Button></CardContent></Card>
         )}
         {budgetsHook.error && <div className="text-[12px] text-[#b42318] dark:text-[#fca5a5]">{budgetsHook.error}</div>}
       </div>
@@ -169,30 +169,37 @@ export default function AnggaranPage() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent onClose={() => setOpen(false)} className="max-w-[420px]">
-          <DialogHeader><DialogTitle>{editing ? "Edit Anggaran" : "Tambah Anggaran"}</DialogTitle></DialogHeader>
-          <form onSubmit={form.handleSubmit(handleSubmit as any)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Kategori — Pengeluaran</Label>
-              <Select value={form.watch("categoryId")} onChange={(e) => form.setValue("categoryId", e.target.value)}>
-                {expenseCats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </Select>
+        <DialogContent onClose={() => setOpen(false)} className="max-w-[420px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
+          <div className="shrink-0 px-6 pt-6 pb-3">
+            <DialogHeader className="mb-0"><DialogTitle>{editing ? "Edit Anggaran" : "Tambah Anggaran"}</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">Limit per kategori · periode {new Date(curYear, curMonth - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" })} otomatis</p></DialogHeader>
+          </div>
+          <form onSubmit={form.handleSubmit(handleSubmit as any)} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-auto overscroll-contain px-6 space-y-4 pb-4">
+              <div className="space-y-1.5">
+                <Label>Kategori — Pengeluaran</Label>
+                <Select value={form.watch("categoryId")} onChange={(e) => form.setValue("categoryId", e.target.value)} className="h-11">
+                  {expenseCats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Limit — Rp</Label>
+                <RupiahInput
+                  value={typeof form.watch("amount") === "number" ? (form.watch("amount") as number) : undefined}
+                  onValueChange={(v) => { form.setValue("amount", v as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("amount"); }}
+                  className="h-11 text-[13px] font-semibold num"
+                  placeholder="0"
+                  inputMode="numeric"
+                  autoFocus
+                  aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.amount)}
+                />
+                {form.formState.isSubmitted && form.formState.errors.amount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.amount.message as string}</p>}
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Limit — Rp</Label>
-              <RupiahInput
-                value={typeof form.watch("amount") === "number" ? (form.watch("amount") as number) : undefined}
-                onValueChange={(v) => { form.setValue("amount", v as any, { shouldValidate: form.formState.isSubmitted }); if (form.formState.isSubmitted) form.trigger("amount"); }}
-                className="h-9 text-[13px] font-semibold num"
-                placeholder="0"
-                aria-invalid={!!(form.formState.isSubmitted && form.formState.errors.amount)}
-              />
-              {form.formState.isSubmitted && form.formState.errors.amount && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{form.formState.errors.amount.message as string}</p>}
-            </div>
-            <div className="text-[12px] text-mute dark:text-[#8f8b85]">Periode: {new Date(curYear, curMonth - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" })} — otomatis</div>
-            <div className="flex gap-2 pt-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>Batal</Button>
-              <Button type="submit" className="flex-1">{editing ? "Simpan" : "Tambah"}</Button>
+            <div className="shrink-0 sticky bottom-0 bg-white dark:bg-[#1d1d1d] border-t hairline px-6 pt-3 pb-[max(16px,env(safe-area-inset-bottom))] mt-2">
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1 h-11" onClick={() => setOpen(false)}>Batal</Button>
+                <Button type="submit" className="flex-1 h-11">{editing ? "Simpan" : "Tambah"}</Button>
+              </div>
             </div>
           </form>
         </DialogContent>
