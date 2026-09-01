@@ -257,7 +257,7 @@ export default function DashboardPage() {
       <Card className="overflow-visible">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
-            <CardTitle className="flex items-center gap-1.5"><Receipt className="h-4 w-4" strokeWidth={1.75} /> Transaksi terbaru</CardTitle>
+            <CardTitle className="flex items-center gap-1.5">Transaksi terbaru</CardTitle>
             <CardDescription>5 terakhir · group per tanggal</CardDescription>
           </div>
           <Link href="/transaksi"><Button variant="outline" size="sm">Lihat semua</Button></Link>
@@ -351,7 +351,7 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-1.5"><TargetIcon className="h-4 w-4" strokeWidth={1.75} /> Tujuan</CardTitle>
+          <CardTitle className="flex items-center gap-1.5">Tujuan</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {goals.slice(0, 2).map((g) => {

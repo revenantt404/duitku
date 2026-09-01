@@ -78,8 +78,9 @@ export default function DompetPage() {
     }
   }
   function requestDelete(id: string) {
-    const used = transactions.some((t) => t.walletId === id || t.toWalletId === id);
-    if (used) { toast("Dompet masih dipakai transaksi — hapus/pindahkan transaksinya dulu"); return; }
+    // jangan block di client pakai state lokal yang bisa stale / kefilter
+    // backend yang jadi source of truth: kalau masih ada transaksi AKTIF (deletedAt=null) → 409 + pesan jumlah
+    // kalau cuma sisa sampah soft-delete (deletedAt != null) → backend auto-purge lalu hapus wallet
     setConfirmId(id);
   }
   async function confirmDelete() {

@@ -1,40 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { ensureUserAndGetId } from "@/lib/ensure-user";
 
-async function getUserIdOr401() {
+async function getAuthOr401() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  await prisma.user.upsert({
-    where: { email: user.email! },
-    update: {},
-    create: { id: user.id, email: user.email!, name: (user.user_metadata as any)?.display_name || (user.user_metadata as any)?.name || null, avatarUrl: (user.user_metadata as any)?.avatar_url || null },
-  }).catch(() => {});
-  return user;
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user || !user.email) return null;
+  try {
+    const dbId = await ensureUserAndGetId(user as any);
+    return { authUser: user, dbId };
+  } catch (e) {
+    console.error("[profile] ensureUser failed:", e);
+    return null;
+  }
 }
 
 export async function GET() {
-  const user = await getUserIdOr401();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getAuthOr401();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { authUser, dbId } = ctx;
   let row: any = null;
   try {
-    row = await prisma.user.findUnique({ where: { id: user.id } });
+    row = await prisma.user.findUnique({ where: { id: dbId } });
   } catch {}
-  // avatar custom (base64) sekarang di localStorage per-email, jangan ambil dari DB/auth
-  // biar cookie gak bengkak 431. DB hanya untuk nama.
-  const meta: any = (user.user_metadata as any) || {};
+  const meta: any = (authUser.user_metadata as any) || {};
   return NextResponse.json({
-    id: user.id,
-    email: user.email,
+    id: authUser.id,
+    email: authUser.email,
     name: row?.name || meta.display_name || meta.name || meta.full_name || null,
     avatarUrl: null,
   });
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await getUserIdOr401();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getAuthOr401();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { authUser, dbId } = ctx;
   const body = await req.json().catch(() => ({}));
   const name = typeof body.name === "string" ? body.name.trim().slice(0, 30) : undefined;
 
@@ -42,12 +44,10 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Nama tidak boleh kosong" }, { status: 400 });
   }
 
-  // avatar base64 JANGAN disimpan ke DB/auth (bikin cookie 431 & prisma error)
-  // avatar disimpan di localStorage `duitku_avatar_<email>` di client (app-shell.tsx)
   let updated: any = null;
   if (name !== undefined) {
     try {
-      updated = await prisma.user.update({ where: { id: user.id }, data: { name } });
+      updated = await prisma.user.update({ where: { id: dbId }, data: { name } });
     } catch {
       updated = null;
     }
@@ -58,8 +58,8 @@ export async function PATCH(req: NextRequest) {
   }
 
   return NextResponse.json({
-    id: user.id,
-    email: user.email,
+    id: authUser.id,
+    email: authUser.email,
     name: updated?.name ?? name ?? null,
     avatarUrl: null,
   });
