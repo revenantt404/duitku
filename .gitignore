@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+dist
+.env
+.env.*
+!.env.example
+.prisma
+*.log
+.DS_Store
+Project-Sample
