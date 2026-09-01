@@ -4,7 +4,7 @@ import { DEMO_WALLETS, DEMO_CATEGORIES, DEMO_BUDGETS, DEMO_GOALS, DEMO_VERSION, 
 import type { DemoWallet, DemoCategory, DemoTx, DemoBudget, DemoGoal } from "./demo-data";
 import {
   listWallets, createWallet as apiCreateWallet, updateWallet as apiUpdateWallet, deleteWallet as apiDeleteWallet,
-  listCategories, createCategory as apiCreateCategory, deleteCategory as apiDeleteCategory,
+  listCategories, createCategory as apiCreateCategory, updateCategory as apiUpdateCategory, deleteCategory as apiDeleteCategory,
   listTransactions, createTransaction as apiCreateTx, deleteTransaction as apiDeleteTx,
   listBudgets, createBudget as apiCreateBudget, updateBudget as apiUpdateBudget, deleteBudget as apiDeleteBudget,
   listGoals, createGoal as apiCreateGoal, updateGoal as apiUpdateGoal, deleteGoal as apiDeleteGoal,
@@ -206,7 +206,18 @@ export function useCategories() {
     setApiData((prev) => (prev ?? []).filter((c) => c.id !== id));
   }, [isDemo, demo]);
 
-  return { data, setData, hydrated, loading, error, isDemo: isDemo === true, refresh, create, remove } as const;
+  const update = useCallback(async (id: string, patch: Partial<{ name: string; icon: string; color: string; type: "INCOME" | "EXPENSE" }>) => {
+    if (isDemo) {
+      demo[1]((prev) => prev.map((c) => c.id === id ? { ...c, ...patch } as UCategory : c));
+      return;
+    }
+    const c = await apiUpdateCategory(id, patch as any);
+    const mapped = mapApiCategory(c);
+    setApiData((prev) => (prev ?? []).map((x) => x.id === id ? mapped : x));
+    return mapped;
+  }, [isDemo, demo]);
+
+  return { data, setData, hydrated, loading, error, isDemo: isDemo === true, refresh, create, update, remove } as const;
 }
 
 export function useTransactions() {

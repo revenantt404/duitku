@@ -129,27 +129,17 @@ export function DateInput({ value, onValueChange, className, withIcon = true, pr
         aria-haspopup="dialog"
         aria-expanded={open}
         className={cn(
-          "flex h-9 w-full items-center rounded-[14px] border hairline bg-white dark:bg-[#1e1e1e] px-3 py-1 text-left text-[14px] transition-colors focus-visible:outline-none focus-visible:border-ink dark:focus-visible:border-[#3a3a3a] disabled:cursor-not-allowed disabled:opacity-50",
-          withIcon ? "pl-[2.55rem]" : "",
-          "pr-3",
+          "flex h-9 w-full items-center gap-2 rounded-[14px] border hairline bg-white dark:bg-[#1e1e1e] px-3 py-1 text-left text-[14px] transition-colors focus-visible:outline-none focus-visible:border-ink dark:focus-visible:border-[#3a3a3a] disabled:cursor-not-allowed disabled:opacity-50",
           isEmpty ? "text-mute dark:text-[#8f8b85]" : "text-ink dark:text-[#e9e6e2] num tabular-nums",
           open && "border-ink dark:border-[#3a3a3a]",
           className
         )}
         {...(props as any)}
       >
-        <span className="truncate flex-1">{isEmpty ? "Pilih tanggal" : display}</span>
+        {withIcon && <Calendar className="h-3.5 w-3.5 shrink-0 text-mute dark:text-[#8f8b85]" strokeWidth={1.75} />}
+        <span className="truncate flex-1 text-left">{isEmpty ? "Pilih tanggal" : display}</span>
+        <ChevronRight className={cn("h-3.5 w-3.5 shrink-0 text-mute dark:text-[#8f8b85] transition-transform", open && (placeUp ? "-rotate-90" : "rotate-90"))} strokeWidth={1.75} />
       </button>
-
-      {withIcon && (
-        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mute dark:text-[#8f8b85]">
-          <Calendar className="h-3.5 w-3.5" strokeWidth={1.75} />
-        </span>
-      )}
-
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-mute dark:text-[#8f8b85]">
-        <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", open && (placeUp ? "-rotate-90" : "rotate-90"))} strokeWidth={1.75} />
-      </span>
 
       {open && (
         <div

@@ -39,6 +39,29 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(cat, { status: 201 });
 }
 
+export async function PATCH(req: NextRequest) {
+  const userId = await getUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const body = await req.json();
+  const id = body?.id;
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  const cat = await prisma.category.findFirst({ where: { id, userId } });
+  if (!cat) return NextResponse.json({ error: "Not found / bukan kategori milikmu" }, { status: 404 });
+  const patch: any = {};
+  if (typeof body.name === "string" && body.name.trim()) patch.name = body.name.trim();
+  if (typeof body.color === "string" && /^#[0-9A-Fa-f]{6}$/.test(body.color)) patch.color = body.color;
+  if (typeof body.icon === "string" && body.icon.trim()) patch.icon = body.icon.trim();
+  if (body.type === "INCOME" || body.type === "EXPENSE") patch.type = body.type;
+  if (patch.name || patch.type) {
+    const dup = await prisma.category.findFirst({
+      where: { userId, name: patch.name ?? cat.name, type: (patch.type ?? cat.type) as any, NOT: { id } },
+    });
+    if (dup) return NextResponse.json({ error: "Kategori sudah ada" }, { status: 409 });
+  }
+  const updated = await prisma.category.update({ where: { id }, data: patch });
+  return NextResponse.json(updated);
+}
+
 export async function DELETE(req: NextRequest) {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

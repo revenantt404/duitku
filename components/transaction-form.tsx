@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { RupiahInput } from "@/components/ui/rupiah-input";
 import { DateInput } from "@/components/ui/date-input";
 import { formatRupiah, cn } from "@/lib/utils";
-import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, Plus, Wallet } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, Plus } from "lucide-react";
 
 type WalletOpt = { id: string; name: string };
 type CatOpt = { id: string; name: string; type: "INCOME" | "EXPENSE"; color: string };
@@ -250,7 +250,6 @@ export function TransactionForm({
                                 : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]"
                             )}
                           >
-                            <Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
                             <span className="text-[12.5px] font-medium truncate">{w.name}</span>
                           </button>
                         );
@@ -284,7 +283,6 @@ export function TransactionForm({
                                   : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]"
                               )}
                             >
-                              <Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
                               <span className="text-[12.5px] font-medium truncate">{w.name}</span>
                             </button>
                           );
@@ -321,7 +319,6 @@ export function TransactionForm({
                               : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]"
                           )}
                         >
-                          <Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
                           <span className="text-[12.5px] font-medium truncate">{w.name}</span>
                         </button>
                       );

@@ -469,9 +469,26 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
 
       <main className="max-w-[720px] mx-auto px-6 md:px-0 pb-[96px] md:pb-24">
         <div className="page-in">{children}</div>
-        <footer className="border-t hairline mt-16 pt-8 flex flex-col sm:flex-row sm:justify-between gap-2">
-          <p className="kicker">© {new Date().getFullYear()} DuitKu · paper/ink/hairline</p>
-          <p className="text-[12.5px] text-mute dark:text-[#7f7b75] truncate">{displayEmail}</p>
+        <footer className="border-t hairline mt-16 pt-8 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
+            <p className="kicker">© {new Date().getFullYear()} DuitKu · paper/ink/hairline</p>
+            <p className="text-[12.5px] text-mute dark:text-[#7f7b75] truncate">{displayEmail}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-[12px] leading-none text-mute dark:text-[#8f8b85]">
+            <span>Ada masukan?</span>
+            <a href={`mailto:${process.env.NEXT_PUBLIC_FEEDBACK_EMAIL || "hello@duitku.app"}`} className="font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Email</a>
+            <span className="opacity-40">·</span>
+            <a
+              href={process.env.NEXT_PUBLIC_FEEDBACK_WA ? `https://wa.me/${process.env.NEXT_PUBLIC_FEEDBACK_WA.replace(/[^0-9]/g, "")}` : "https://wa.me/6280000000000?text=Halo%20DuitKu"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]"
+            >
+              WhatsApp
+            </a>
+            <span className="hidden sm:inline opacity-40">·</span>
+            <span className="hidden sm:inline">Balas &lt; 24 jam</span>
+          </div>
         </footer>
       </main>
 

@@ -26,6 +26,7 @@ export default function AnggaranPage() {
   const { toast, toastUndo } = useToast();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const now = new Date();
   const curMonth = now.getMonth() + 1;
   const curYear = now.getFullYear();
@@ -67,10 +68,14 @@ export default function AnggaranPage() {
       toast(e?.message || "Gagal menyimpan anggaran");
     }
   }
-  async function handleDelete(id: string) {
+  function requestDelete(id: string) { setConfirmId(id); }
+  async function confirmDelete() {
+    const id = confirmId;
+    if (!id) return;
     const removed = budgets.find((b) => b.id === id);
     if (!removed) return;
     const idx = budgets.findIndex((b) => b.id === id);
+    setConfirmId(null);
     try {
       await budgetsHook.remove(id);
       toastUndo("Anggaran dihapus", async () => {
@@ -85,7 +90,7 @@ export default function AnggaranPage() {
             await budgetsHook.create({ categoryId: removed.categoryId, amount: removed.amount, month: removed.month, year: removed.year } as any);
           }
         } catch {}
-      });
+      }, 10000);
     } catch (e: any) {
       toast(e?.message || "Gagal menghapus anggaran");
     }
@@ -147,7 +152,7 @@ export default function AnggaranPage() {
                 </div>
                 <div className="flex gap-1 shrink-0">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(budget.id)}><Pencil className="h-4 w-4" strokeWidth={1.75} /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(budget.id)}><Trash2 className="h-4 w-4" strokeWidth={1.75} /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => requestDelete(budget.id)}><Trash2 className="h-4 w-4" strokeWidth={1.75} /></Button>
                 </div>
               </div>
               <Progress value={Math.min(100, pct)} className="mt-4" indicatorClassName={over ? "bg-[#b42318] dark:bg-[#fca5a5]" : nearLimit ? "bg-[#a16207] dark:bg-[#fcd34d]" : undefined} />
@@ -202,6 +207,16 @@ export default function AnggaranPage() {
               </div>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmId} onOpenChange={(o) => { if (!o) setConfirmId(null); }}>
+        <DialogContent onClose={() => setConfirmId(null)} className="max-w-[380px]">
+          <DialogHeader><DialogTitle>Hapus anggaran?</DialogTitle><p className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">Yakin hapus anggaran <span className="font-semibold text-ink dark:text-[#e9e6e2]">{budgets.find((b) => b.id === confirmId) ? (catMap.get(budgets.find((b) => b.id === confirmId)!.categoryId)?.name || "ini") : ""}</span>? Bisa diurungkan 10 detik.</p></DialogHeader>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1 h-11" onClick={() => setConfirmId(null)}>Batal</Button>
+            <Button className="flex-1 h-11 bg-[#b42318] hover:bg-[#991b1b] text-white dark:bg-[#fca5a5] dark:text-[#141414] dark:hover:bg-[#f87171]" onClick={confirmDelete}>Hapus</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

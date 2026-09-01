@@ -11,7 +11,7 @@ type Toast = {
 
 type ToastCtx = {
   toast: (msg: string) => void;
-  toastUndo: (msg: string, onUndo: () => void) => void;
+  toastUndo: (msg: string, onUndo: () => void, duration?: number) => void;
 };
 
 const Ctx = createContext<ToastCtx>({ toast() {}, toastUndo() {} });
@@ -40,13 +40,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     push({ id: String(Date.now() + Math.random()), message, duration: 2500 });
   }, [push]);
 
-  const toastUndo = useCallback((message: string, onUndo: () => void) => {
+  const toastUndo = useCallback((message: string, onUndo: () => void, duration = 10000) => {
     const id = String(Date.now() + Math.random());
     push({
       id,
       message,
       actionLabel: "Urungkan",
-      duration: 5000,
+      duration,
       onAction: () => {
         onUndo();
         dismiss(id);

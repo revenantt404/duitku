@@ -6,8 +6,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['"Instrument Sans"', "Inter", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial"],
-        display: ['"EB Garamond"', "Georgia", "serif"],
-        serif: ['"EB Garamond"', "Georgia", "serif"],
+        display: ['"Instrument Sans"', "Inter", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial"],
+        serif: ['"Instrument Sans"', "Inter", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       colors: {

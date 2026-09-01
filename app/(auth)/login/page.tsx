@@ -138,6 +138,9 @@ export default function LoginPage() {
                 </Button>
                 <Button type="button" variant="outline" className="h-10" onClick={handleSignup} disabled={loading}>Daftar</Button>
               </div>
+              <div className="text-center">
+                <Link href="/reset-password" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Lupa password?</Link>
+              </div>
             </form>
 
             {msg && <div className="rounded-[14px] bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] text-[12px] leading-relaxed p-3 border hairline">{msg}</div>}

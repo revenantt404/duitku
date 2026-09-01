@@ -143,6 +143,16 @@ export async function createCategory(input: {
     body: JSON.stringify(input),
   });
 }
+export async function updateCategory(
+  id: string,
+  patch: Partial<{ name: string; icon: string; color: string; type: "INCOME" | "EXPENSE" }>
+): Promise<ApiCategory> {
+  return await req("/api/categories", {
+    method: "PATCH",
+    body: JSON.stringify({ id, ...patch }),
+  });
+}
+
 export async function deleteCategory(id: string): Promise<void> {
   await req(`/api/categories?id=${encodeURIComponent(id)}`, { method: "DELETE" });
 }

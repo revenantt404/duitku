@@ -148,6 +148,14 @@ export default function DashboardPage() {
   const monthLabel = new Date(monthFilter.year, monthFilter.month, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" });
   const isLoading = !walletsHook.hydrated || walletsHook.loading || txHook.loading;
 
+  const onboardingStep = useMemo(() => {
+    const s1 = wallets.length > 0;
+    const s2 = categories.length > 0;
+    const s3 = transactions.length > 0;
+    const done = [s1, s2, s3].filter(Boolean).length;
+    return { s1, s2, s3, done, show: walletsHook.hydrated && !s1 };
+  }, [wallets.length, categories.length, transactions.length, walletsHook.hydrated]);
+
   return (
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-3">
@@ -157,6 +165,27 @@ export default function DashboardPage() {
         </div>
         <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} fab />
       </div>
+
+      {onboardingStep.show && (
+        <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] overflow-hidden">
+          <CardContent className="p-5">
+            <div className="kicker">Mulai 3 langkah</div>
+            <div className="text-[14px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2] mt-1">Setup dulu biar transaksi &lt;10 detik</div>
+            <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-0.5">Progress {onboardingStep.done}/3 · selesaiin biar dashboard hidup</div>
+            <div className="mt-4 grid gap-2">
+              <Link href="/dompet" className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
+                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s1 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]"}`}>{onboardingStep.s1 ? "✓" : "1"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Buat dompet</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">BCA / Cash / GoPay</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
+              </Link>
+              <Link href="/kategori" className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
+                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s2 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s2 ? "✓" : "2"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Cek kategori</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Makan, Transport… tambah custom</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
+              </Link>
+              <div className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3">
+                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s3 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s3 ? "✓" : "3"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Catat transaksi pertama</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Nominal → kategori → simpan</span></span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} triggerLabel="Coba" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="rounded-[18px] overflow-hidden shadow-sm">
         <CardContent className="p-6">
@@ -193,6 +222,17 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+
+      <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]">
+        <CardContent className="p-4 flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Kategori</div>
+            <div className="text-[13px] font-medium text-ink dark:text-[#e9e6e2] mt-0.5">{categories.length} kategori · {categories.filter((c) => c.type === "EXPENSE").length} keluar · {categories.filter((c) => c.type === "INCOME").length} masuk</div>
+            <div className="text-[11px] text-mute dark:text-[#8f8b85]">Atur warna & icon biar pill transaksi cakep</div>
+          </div>
+          <Link href="/kategori"><Button size="sm" variant="outline">Kelola →</Button></Link>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

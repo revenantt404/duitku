@@ -26,6 +26,7 @@ export default function DompetPage() {
   const { toast, toastUndo } = useToast();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const form = useForm<WalletInput>({
     resolver: zodResolver(walletSchema) as any,
@@ -76,19 +77,22 @@ export default function DompetPage() {
       toast(e?.message || "Gagal menyimpan dompet");
     }
   }
-  async function handleDelete(id: string) {
+  function requestDelete(id: string) {
     const used = transactions.some((t) => t.walletId === id || t.toWalletId === id);
     if (used) { toast("Dompet masih dipakai transaksi — hapus/pindahkan transaksinya dulu"); return; }
+    setConfirmId(id);
+  }
+  async function confirmDelete() {
+    const id = confirmId;
+    if (!id) return;
     const removed = wallets.find((w) => w.id === id);
     if (!removed) return;
     const idx = wallets.findIndex((w) => w.id === id);
-    // optimistic: keep snapshot for undo
+    setConfirmId(null);
     try {
       await walletsHook.remove(id);
       toastUndo("Dompet dihapus", async () => {
         try {
-          // undo: create balik dengan id lama kalau demo, kalau Supabase akan jadi id baru — tapi lebih baik restore via create
-          // untuk Supabase undo tidak perfect (id baru), tapi tetap kembalikan data
           if (walletsHook.isDemo) {
             walletsHook.setData((prev: any) => {
               const next = [...prev];
@@ -99,7 +103,7 @@ export default function DompetPage() {
             await walletsHook.create({ name: removed.name, type: removed.type as any, color: removed.color, icon: removed.icon, initialBalance: removed.initialBalance });
           }
         } catch {}
-      });
+      }, 10000);
     } catch (e: any) {
       toast(e?.message || "Gagal menghapus — mungkin masih dipakai di server");
     }
@@ -132,7 +136,7 @@ export default function DompetPage() {
             <WalletCard wallet={wallet as any} balance={balance} negative={balance < 0} />
             <div className="absolute top-2 right-2 flex gap-1">
               <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => openEdit(wallet.id)} aria-label="Edit dompet"><Pencil className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
-              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => handleDelete(wallet.id)} aria-label="Hapus dompet"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => requestDelete(wallet.id)} aria-label="Hapus dompet"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
             </div>
             <div className="text-[11px] text-mute dark:text-[#8f8b85] mt-2 px-1 num">awal {formatRupiah(wallet.initialBalance)} · {TYPE_LABEL[wallet.type] || wallet.type}</div>
           </div>
@@ -203,6 +207,16 @@ export default function DompetPage() {
               </div>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmId} onOpenChange={(o) => { if (!o) setConfirmId(null); }}>
+        <DialogContent onClose={() => setConfirmId(null)} className="max-w-[380px]">
+          <DialogHeader><DialogTitle>Hapus dompet?</DialogTitle><p className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">Yakin hapus <span className="font-semibold text-ink dark:text-[#e9e6e2]">{wallets.find((w) => w.id === confirmId)?.name}</span>? Bisa diurungkan 10 detik.</p></DialogHeader>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1 h-11" onClick={() => setConfirmId(null)}>Batal</Button>
+            <Button className="flex-1 h-11 bg-[#b42318] hover:bg-[#991b1b] text-white dark:bg-[#fca5a5] dark:text-[#141414] dark:hover:bg-[#f87171]" onClick={confirmDelete}>Hapus</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,12 @@ import { formatRupiah, formatDateShort, cn } from "@/lib/utils";
 import { RupiahInput } from "@/components/ui/rupiah-input";
 import { DateInput } from "@/components/ui/date-input";
 import { useToast } from "@/components/ui/toast";
-import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, Trash2, Search, Pencil, Copy, X, Wallet } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, Trash2, Search, Pencil, Copy, X, Download } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { transactionSchema, type TransactionInput } from "@/lib/validations";
+import { buildTransactionCsvRows, downloadCsv } from "@/lib/csv";
+import Link from "next/link";
 
 export default function TransaksiPage() {
   const walletsHook = useWallets();
@@ -30,11 +32,42 @@ export default function TransaksiPage() {
   const [q, setQ] = useState("");
   const [filterType, setFilterType] = useState<"ALL" | "INCOME" | "EXPENSE" | "TRANSFER">("ALL");
   const [filterWallet, setFilterWallet] = useState<string>("ALL");
+  const [filterCategory, setFilterCategory] = useState<string>("ALL");
   const [filterMonth, setFilterMonth] = useState<string>(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
   const [editTx, setEditTx] = useState<any | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const typeScrollRef = useRef<HTMLDivElement>(null);
+  const walletScrollRef = useRef<HTMLDivElement>(null);
+  const catScrollRef = useRef<HTMLDivElement>(null);
+  const onWheelH = (e: React.WheelEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollWidth > el.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    }
+  };
+  const onDragStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const startX = e.pageX - el.offsetLeft;
+    const startScroll = el.scrollLeft;
+    const onMove = (ev: MouseEvent) => {
+      const x = ev.pageX - el.offsetLeft;
+      el.scrollLeft = startScroll - (x - startX);
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      el.style.cursor = "";
+      el.style.userSelect = "";
+    };
+    el.style.cursor = "grabbing";
+    el.style.userSelect = "none";
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
 
   const catMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const walletMap = useMemo(() => new Map(wallets.map((w) => [w.id, w])), [wallets]);
@@ -66,6 +99,7 @@ export default function TransaksiPage() {
     return transactions.filter((t) => {
       if (filterType !== "ALL" && t.type !== filterType) return false;
       if (filterWallet !== "ALL" && t.walletId !== filterWallet && t.toWalletId !== filterWallet) return false;
+      if (filterCategory !== "ALL" && t.categoryId !== filterCategory) return false;
       if (filterMonth) {
         const [y, m] = filterMonth.split("-").map(Number);
         const d = new Date(t.date);
@@ -77,7 +111,13 @@ export default function TransaksiPage() {
       }
       return true;
     }).sort((a, b) => +new Date(b.date) - +new Date(a.date));
-  }, [transactions, filterType, filterWallet, filterMonth, q, catMap, walletMap]);
+  }, [transactions, filterType, filterWallet, filterCategory, filterMonth, q, catMap, walletMap]);
+
+  const visibleCategories = useMemo(() => {
+    if (filterType === "TRANSFER") return [];
+    if (filterType === "ALL") return categories;
+    return categories.filter((c) => c.type === filterType);
+  }, [categories, filterType]);
 
   const summary = useMemo(() => {
     const income = filtered.filter((t) => t.type === "INCOME").reduce((a, b) => a + b.amount, 0);
@@ -124,10 +164,15 @@ export default function TransaksiPage() {
     }
   }
 
-  async function handleDelete(id: string) {
+  function requestDelete(id: string) { setConfirmId(id); }
+
+  async function confirmDelete() {
+    const id = confirmId;
+    if (!id) return;
     const removed = transactions.find((t) => t.id === id);
     if (!removed) return;
     const idx = transactions.findIndex((t) => t.id === id);
+    setConfirmId(null);
     try {
       await txHook.remove(id);
       toastUndo("Transaksi dihapus", async () => {
@@ -150,10 +195,26 @@ export default function TransaksiPage() {
             } as any);
           }
         } catch {}
-      });
+      }, 10000);
     } catch (e: any) {
       toast(e?.message || "Gagal menghapus");
     }
+  }
+
+  function handleExport() {
+    if (filtered.length === 0) { toast("Tidak ada data untuk diekspor"); return; }
+    const rows = buildTransactionCsvRows(filtered.map((t) => ({
+      date: t.date,
+      type: t.type,
+      amount: t.amount,
+      categoryName: t.categoryId ? (catMap.get(t.categoryId)?.name || "") : "",
+      walletName: walletMap.get(t.walletId)?.name || "",
+      toWalletName: t.toWalletId ? (walletMap.get(t.toWalletId)?.name || "") : "",
+      description: t.description || "",
+    })));
+    const fname = `duitku-${filterMonth || new Date().toISOString().slice(0, 7)}.csv`;
+    downloadCsv(fname, rows);
+    toast(`CSV diekspor · ${filtered.length} baris`);
   }
 
   async function handleDuplicate(id: string) {
@@ -193,12 +254,11 @@ export default function TransaksiPage() {
             date: new Date((snapshot as any).date) as any,
           } as any);
         } catch {
-          // fallback demo: restore via setData
           if (txHook.isDemo) {
             txHook.setData((curr: any) => curr.map((t: any) => t.id === (snapshot as any).id ? snapshot : t));
           }
         }
-      });
+      }, 10000);
     } catch (e: any) {
       toast(e?.message || "Gagal memperbarui");
     }
@@ -230,11 +290,14 @@ export default function TransaksiPage() {
           <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Transaksi</h1>
           <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Filter per bulan · cari · hapus · edit 2-tap</p>
         </div>
-        <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} />
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={handleExport} className="hidden sm:inline-flex"><Download className="h-3.5 w-3.5" strokeWidth={1.75} /> Ekspor</Button>
+          <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} />
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="p-4 grid gap-3">
+      <Card className="overflow-hidden">
+        <CardContent className="p-4 space-y-3 min-w-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-mute dark:text-[#8f8b85]" strokeWidth={1.75} />
             <Input placeholder="Cari: ayam, gaji, BCA..." className="pl-10 pr-10 h-10" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -244,35 +307,86 @@ export default function TransaksiPage() {
               </button>
             )}
           </div>
-          <div className="flex flex-col gap-3">
-            <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline w-fit max-w-full overflow-x-auto">
-              {[
-                { v: "ALL", label: "Semua" },
-                { v: "EXPENSE", label: "Keluar" },
-                { v: "INCOME", label: "Masuk" },
-                { v: "TRANSFER", label: "Transfer" },
-              ].map((o) => (
-                <button
-                  key={o.v}
-                  type="button"
-                  onClick={() => setFilterType(o.v as any)}
-                  className={cn(
-                    "press shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium tracking-tight transition-[transform,colors]",
-                    filterType === o.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85] hover:text-ink dark:hover:text-[#e9e6e2]"
-                  )}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 overflow-x-auto">
-              <div className="inline-flex gap-1 rounded-full bg-white dark:bg-[#141414] p-1 border hairline w-fit">
-                <button type="button" onClick={() => setFilterWallet("ALL")} className={cn("press shrink-0 rounded-full px-3 py-1.5 text-xs font-medium", filterWallet === "ALL" ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]")}>Semua dompet</button>
-                {wallets.map((w) => (
-                  <button key={w.id} type="button" onClick={() => setFilterWallet(w.id)} className={cn("press shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterWallet === w.id ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-[#f3f1ec] dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]")}>{w.name}</button>
+          <div className="flex flex-col gap-3 min-w-0">
+            <div
+              ref={typeScrollRef}
+              onWheel={onWheelH}
+              onMouseDown={onDragStart}
+              className="overflow-x-auto overscroll-x-contain touch-pan-x -mx-4 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing select-none"
+              style={{ WebkitOverflowScrolling: "touch" } as any}
+            >
+              <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline w-max flex-nowrap pointer-events-auto">
+                {[
+                  { v: "ALL", label: "Semua" },
+                  { v: "EXPENSE", label: "Keluar" },
+                  { v: "INCOME", label: "Masuk" },
+                  { v: "TRANSFER", label: "Transfer" },
+                ].map((o) => (
+                  <button
+                    key={o.v}
+                    type="button"
+                    onClick={() => { setFilterType(o.v as any); setFilterCategory("ALL"); }}
+                    className={cn(
+                      "press shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium tracking-tight transition-[transform,colors]",
+                      filterType === o.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85] hover:text-ink dark:hover:text-[#e9e6e2]"
+                    )}
+                  >
+                    {o.label}
+                  </button>
                 ))}
               </div>
-              <Input type="month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} className="ml-auto max-w-[160px] shrink-0" />
+            </div>
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                ref={walletScrollRef}
+                onWheel={onWheelH}
+                onMouseDown={onDragStart}
+                className="flex-1 min-w-0 overflow-x-auto overscroll-x-contain touch-pan-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing select-none"
+                style={{ WebkitOverflowScrolling: "touch" } as any}
+              >
+                <div className="inline-flex gap-1 rounded-full bg-white dark:bg-[#141414] p-1 border hairline w-max flex-nowrap pointer-events-auto">
+                  <button type="button" onClick={() => setFilterWallet("ALL")} className={cn("press shrink-0 rounded-full px-3 py-1.5 text-xs font-medium", filterWallet === "ALL" ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]")}>Semua dompet</button>
+                  {wallets.map((w) => (
+                    <button key={w.id} type="button" onClick={() => setFilterWallet(w.id)} className={cn("press shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterWallet === w.id ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-[#f3f1ec] dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]")}>{w.name}</button>
+                  ))}
+                </div>
+              </div>
+              <Input type="month" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} className="w-[132px] sm:w-[148px] shrink-0" />
+            </div>
+            {visibleCategories.length > 0 && (
+              <div
+                ref={catScrollRef}
+                onWheel={onWheelH}
+                onMouseDown={onDragStart}
+                className="group/category overflow-x-auto overscroll-x-contain touch-pan-x -mx-4 px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing select-none"
+                title="Geser: drag, scroll-wheel, atau Shift+scroll"
+                style={{ WebkitOverflowScrolling: "touch" } as any}
+              >
+                <div className="flex items-center gap-1.5 w-max flex-nowrap pointer-events-auto">
+                  <span className="text-[11px] font-medium tracking-widest uppercase text-mute dark:text-[#8f8b85] shrink-0 mr-1">Kategori</span>
+                  <button
+                    type="button"
+                    onClick={() => setFilterCategory("ALL")}
+                    className={cn("press shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterCategory === "ALL" ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#141414] text-mute dark:text-[#8f8b85]")}
+                  >
+                    Semua
+                  </button>
+                  {visibleCategories.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setFilterCategory(c.id)}
+                      className={cn("press shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterCategory === c.id ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#141414] text-ink dark:text-[#e9e6e2]")}
+                    >
+                      <span className="h-2 w-2 rounded-full shrink-0" style={{ background: filterCategory === c.id ? "#fff" : c.color }} />{c.name}
+                    </button>
+                  ))}
+                  <Link href="/kategori" className="text-[11px] font-medium text-mute dark:text-[#8f8b85] hover:text-ink dark:hover:text-[#e9e6e2] underline underline-offset-4 shrink-0 ml-1">Atur →</Link>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-2 sm:hidden">
+              <Button variant="outline" size="sm" onClick={handleExport} className="flex-1"><Download className="h-3.5 w-3.5" strokeWidth={1.75} /> Ekspor CSV ({filtered.length})</Button>
             </div>
           </div>
         </CardContent>
@@ -295,7 +409,7 @@ export default function TransaksiPage() {
               <div className="text-[13px] font-semibold mt-1 text-ink dark:text-[#e9e6e2]">Belum ada transaksi — setup dulu biar seamless</div>
               <div className="mt-4 grid gap-2 text-[13px]">
                 <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">1.</span> Buat dompet · BCA/Cash/GoPay</span><span className="h-6 w-6 rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center text-[11px]">→</span></div>
-                <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">2.</span> Kategori ada default — tambah custom kalau perlu</span><span className="text-mute text-[11px]">Makan/Transport…</span></div>
+                <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">2.</span> Kategori ada default — tambah custom kalau perlu</span><Link href="/kategori" className="text-[11px] font-medium underline underline-offset-4">Atur kategori</Link></div>
                 <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">3.</span> Tambah transaksi pertama</span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} triggerLabel="Coba" /></div>
               </div>
               <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-3">Setelah ini input cuma <span className="font-medium text-ink dark:text-[#e9e6e2]">&lt;10 detik</span> — nominal → kategori chip → simpan. Edit & duplikat 2-tap kalau salah.</div>
@@ -336,7 +450,7 @@ export default function TransaksiPage() {
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => setEditTx(t)} className="h-8 w-8" aria-label="Edit"><Pencil className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDuplicate(t.id)} className="h-8 w-8" aria-label="Duplikat"><Copy className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(t.id)} className="h-8 w-8" aria-label="Hapus"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => requestDelete(t.id)} className="h-8 w-8" aria-label="Hapus"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
                           </div>
                         </div>
                       );
@@ -349,12 +463,22 @@ export default function TransaksiPage() {
             <div className="py-10 text-center">
               <div className="mx-auto h-10 w-10 rounded-xl bg-[#f3f1ec] dark:bg-[#1d1d1d] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div>
               <div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Tidak ada transaksi untuk filter ini</div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => { setQ(""); setFilterType("ALL"); setFilterWallet("ALL"); }}>Bersihkan filter</Button>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => { setQ(""); setFilterType("ALL"); setFilterWallet("ALL"); setFilterCategory("ALL"); }}>Bersihkan filter</Button>
             </div>
           )}
           {txHook.error && <div className="mt-3 text-[12px] text-[#b42318] dark:text-[#fca5a5]">{txHook.error}</div>}
         </CardContent>
       </Card>
+
+      <Dialog open={!!confirmId} onOpenChange={(o) => { if (!o) setConfirmId(null); }}>
+        <DialogContent onClose={() => setConfirmId(null)} className="max-w-[380px]">
+          <DialogHeader><DialogTitle>Hapus transaksi?</DialogTitle><p className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">Yakin hapus transaksi ini? Bisa diurungkan 10 detik.</p></DialogHeader>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1 h-11" onClick={() => setConfirmId(null)}>Batal</Button>
+            <Button className="flex-1 h-11 bg-[#b42318] hover:bg-[#991b1b] text-white dark:bg-[#fca5a5] dark:text-[#141414] dark:hover:bg-[#f87171]" onClick={confirmDelete}>Hapus</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editTx} onOpenChange={(o) => { if (!o) setEditTx(null); }}>
         <DialogContent onClose={() => setEditTx(null)} className="max-w-[440px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
@@ -414,7 +538,7 @@ export default function TransaksiPage() {
                     <div className="grid grid-cols-2 gap-2">
                       {wallets.map((w) => {
                         const active = editForm.watch("walletId") === w.id;
-                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} /><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
                       })}
                     </div>
                   </div>
@@ -423,7 +547,7 @@ export default function TransaksiPage() {
                     <div className="grid grid-cols-2 gap-2">
                       {wallets.filter((w) => w.id !== editWalletId).map((w) => {
                         const active = editForm.watch("toWalletId") === w.id;
-                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("toWalletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("toWalletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} /><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("toWalletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("toWalletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
                       })}
                     </div>
                     {editForm.formState.isSubmitted && (editForm.formState.errors as any).toWalletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).toWalletId.message as string}</p>}
@@ -435,7 +559,7 @@ export default function TransaksiPage() {
                   <div className="grid grid-cols-2 gap-2">
                     {wallets.map((w) => {
                       const active = editForm.watch("walletId") === w.id;
-                      return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><Wallet className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} /><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                      return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
                     })}
                   </div>
                   {editForm.formState.isSubmitted && (editForm.formState.errors as any).walletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).walletId.message as string}</p>}
