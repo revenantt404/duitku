@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { QueryProvider } from "@/components/query-provider";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
@@ -12,5 +13,9 @@ export default async function DashboardGroupLayout({ children }: { children: Rea
       email = user?.email ?? null;
     }
   } catch {}
-  return <AppShell email={email}>{children}</AppShell>;
+  return (
+    <QueryProvider>
+      <AppShell email={email}>{children}</AppShell>
+    </QueryProvider>
+  );
 }

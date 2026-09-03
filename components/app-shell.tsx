@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, LogOut, Sun, Moon, Camera, Trash2 } from "lucide-react";
 import { BottomNav, NAV } from "@/components/bottom-nav";
+import { useIsFetching } from "@tanstack/react-query";
 
 function validAvatar(u: unknown): string | null {
   if (typeof u !== "string" || u.trim() === "") return null;
@@ -32,6 +33,10 @@ function getInitials(name: string, email: string) {
   return src.slice(0, 2).toUpperCase();
 }
 
+function useSyncStatus(): boolean {
+  return useIsFetching() > 0;
+}
+
 export function AppShell({ children, email }: { children: React.ReactNode; email?: string | null }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -40,6 +45,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const { resolved, setTheme } = useTheme();
   const isDark = resolved === "dark";
+  const isSyncing = useSyncStatus();
 
   const [profileName, setProfileName] = useState<string>("");
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
@@ -294,6 +300,12 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
           </div>
         </div>
 
+        <div className="px-4 py-2 flex items-center gap-2 text-[12px] border-b hairline bg-white dark:bg-[#1d1d1d]">
+          <span className={cn("h-2 w-2 rounded-full shrink-0", isSyncing ? "bg-[#a16207] dark:bg-[#fcd34d] animate-pulse" : "bg-[#1a7a4a] dark:bg-[#4ade80]")} aria-hidden />
+          <span className={cn("font-medium", isSyncing ? "text-[#a16207] dark:text-[#fcd34d]" : "text-[#1a7a4a] dark:text-[#4ade80]")}>{isSyncing ? "Sinkronisasi…" : "Sinkron"}</span>
+          <span className="ml-auto text-[11px] text-mute dark:text-[#8f8b85]">{isSyncing ? "memperbarui" : "terkini"}</span>
+        </div>
+
         <div className="py-2">
           <button
             type="button"
@@ -447,12 +459,16 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
               ref={btnRef}
               id="profileToggle"
               type="button"
-              aria-label="Profil"
+              aria-label={isSyncing ? "Profil — sinkronisasi" : "Profil — sinkron"}
               aria-haspopup="menu"
               aria-expanded={profileMenuOpen}
               aria-controls="profileMenu"
+              title={isSyncing ? "Sinkronisasi…" : "Sinkron"}
               onClick={() => setProfileMenuOpen((v) => !v)}
-              className="ml-1 h-8 w-8 shrink-0 rounded-full border hairline overflow-hidden flex items-center justify-center hover:opacity-90 transition p-0 bg-white dark:bg-[#1d1d1d] aspect-square"
+              className={cn(
+                "ml-1 h-8 w-8 shrink-0 rounded-full overflow-hidden flex items-center justify-center hover:opacity-90 transition-all duration-200 p-0 bg-white dark:bg-[#1d1d1d] aspect-square ring-2 ring-offset-2 ring-offset-paper dark:ring-offset-[#141414]",
+                isSyncing ? "ring-[#a16207] dark:ring-[#fcd34d]" : "ring-[#1a7a4a] dark:ring-[#4ade80]"
+              )}
             >
               {profileAvatar ? (
                 // eslint-disable-next-line @next/next/no-img-element

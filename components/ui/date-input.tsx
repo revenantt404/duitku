@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,8 +53,13 @@ export function DateInput({ value, onValueChange, className, withIcon = true, pr
   const display = str ? formatDisplay(str) : "";
 
   const [open, setOpen] = React.useState(false);
-  const wrapRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const calendarRef = React.useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = React.useState(false);
   const [placeUp, setPlaceUp] = React.useState(false);
+  const [posStyle, setPosStyle] = React.useState<React.CSSProperties>({});
+
+  React.useEffect(() => { setMounted(true); }, []);
 
   const initialView = React.useMemo(() => {
     if (str) {
@@ -69,27 +75,70 @@ export function DateInput({ value, onValueChange, className, withIcon = true, pr
     if (!open) setView(initialView);
   }, [initialView, open]);
 
-  // auto-flip: kalau space bawah < 360px dan space atas lebih lega → buka ke atas
-  // di dalam Dialog transaksi posisi tanggal memang di bawah, jadi default akan ke atas
+  // compute fixed portal position — reuse placeUp logic from before (Q18)
   React.useEffect(() => {
-    if (!open || !wrapRef.current) return;
-    if (preferUp !== undefined) { setPlaceUp(preferUp); return; }
-    const rect = wrapRef.current.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    // butuh ~340px tinggi calendar + margin
-    const needUp = spaceBelow < 360 && spaceAbove > spaceBelow;
-    setPlaceUp(needUp);
-    // kalau di dalam Dialog (ketauan dari dekat bottom viewport < 40% height) bias ke atas
-    // fallback: di Dialog memang harus ke atas biar gak ketutup
-    const inBottomSheet = rect.top > window.innerHeight * 0.55;
-    if (inBottomSheet && spaceBelow < 400) setPlaceUp(true);
+    if (!open || !triggerRef.current) return;
+    const GAP = 8;
+    const CAL_H = 360;
+    const CAL_W = 304;
+
+    function compute() {
+      const el = triggerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+
+      let needUp: boolean;
+      if (preferUp !== undefined) needUp = preferUp;
+      else {
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        needUp = spaceBelow < 360 && spaceAbove > spaceBelow;
+        const inBottomSheet = rect.top > window.innerHeight * 0.55;
+        if (inBottomSheet && spaceBelow < 400) needUp = true;
+      }
+      setPlaceUp(needUp);
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // narrow viewport < 340px → left:16 right:16 width:auto
+      if (vw < 340) {
+        let top: number;
+        if (needUp) top = rect.top - GAP - CAL_H;
+        else top = rect.bottom + GAP;
+        top = Math.max(8, Math.min(top, vh - CAL_H - 8));
+        // clamp if still off-screen after clamp, keep visible
+        setPosStyle({ position: "fixed", top, left: 16, right: 16, width: "auto", zIndex: 60 } as React.CSSProperties);
+        return;
+      }
+
+      let top: number;
+      if (needUp) top = rect.top - GAP - CAL_H;
+      else top = rect.bottom + GAP;
+      top = Math.max(8, Math.min(top, vh - CAL_H - 8));
+
+      let left = rect.left + rect.width / 2 - CAL_W / 2;
+      left = Math.max(8, Math.min(left, vw - CAL_W - 8));
+
+      setPosStyle({ position: "fixed", top, left, width: CAL_W, zIndex: 60 } as React.CSSProperties);
+    }
+
+    compute();
+    window.addEventListener("resize", compute);
+    window.addEventListener("scroll", compute, true);
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("scroll", compute, true);
+    };
   }, [open, preferUp]);
 
   React.useEffect(() => {
     if (!open) return;
     function onDown(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (triggerRef.current && triggerRef.current.contains(t)) return;
+      if (calendarRef.current && calendarRef.current.contains(t)) return;
+      setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
@@ -119,10 +168,105 @@ export function DateInput({ value, onValueChange, className, withIcon = true, pr
     setOpen(false);
   }
 
+  const canPortal = mounted && typeof document !== "undefined";
+
+  const calendar = (
+    <div
+      ref={calendarRef}
+      role="dialog"
+      aria-label="Pilih tanggal"
+      className={cn(
+        "rounded-[18px] border hairline bg-white dark:bg-[#1e1e1e] p-3 fade-in",
+        "max-h-[min(70dvh,360px)] overflow-auto overscroll-contain"
+      )}
+      style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.12)", ...posStyle }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setView(new Date(year, month - 1, 1))}
+          className="press grid h-8 w-8 place-items-center rounded-full border hairline bg-[#f3f1ec] dark:bg-[#141414] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]"
+          aria-label="Bulan sebelumnya"
+        >
+          <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
+        </button>
+        <div className="text-[13px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2]">
+          {MONTHS_ID[month]} <span className="num">{year}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setView(new Date(year, month + 1, 1))}
+          className="press grid h-8 w-8 place-items-center rounded-full border hairline bg-[#f3f1ec] dark:bg-[#141414] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]"
+          aria-label="Bulan berikutnya"
+        >
+          <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
+        </button>
+      </div>
+
+      <div className="mt-3 grid grid-cols-7 gap-1 text-center">
+        {WEEKDAYS.map((w) => (
+          <div key={w} className="py-1 text-[11px] font-medium tracking-wide text-mute dark:text-[#8f8b85]">{w}</div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (d === null) return <div key={`e-${i}`} className="h-8 w-8" />;
+          const iso = toISO(new Date(year, month, d));
+          const isSelected = iso === str;
+          const isToday = iso === todayISO;
+          return (
+            <button
+              key={iso}
+              type="button"
+              onClick={() => pickDay(d)}
+              className={cn(
+                "press h-8 w-8 rounded-full text-[13px] num tabular-nums grid place-items-center border border-transparent transition-colors",
+                isSelected
+                  ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink dark:border-[#e9e6e2]"
+                  : "text-ink dark:text-[#e9e6e2] hover:bg-[#f3f1ec] dark:hover:bg-[#222] hover:border-[#e6e3df] dark:hover:border-[#2a2a2a]",
+                !isSelected && isToday && "border-ink dark:border-[#e9e6e2]"
+              )}
+            >
+              {d}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-2 border-t hairline pt-3">
+        <button
+          type="button"
+          onClick={() => {
+            onValueChange(toWIBInputValue(new Date()));
+            setOpen(false);
+          }}
+          className="press text-[12px] font-medium text-mute dark:text-[#a7a39d] hover:text-ink dark:hover:text-[#e9e6e2] rounded-full border hairline px-3 py-1.5 bg-[#f3f1ec] dark:bg-[#141414]"
+        >
+          Hari ini
+        </button>
+        {!isEmpty && (
+          <button
+            type="button"
+            onClick={() => { onValueChange(""); setOpen(false); }}
+            className="text-[12px] font-medium text-mute dark:text-[#8f8b85] hover:text-[#b42318] dark:hover:text-[#fca5a5]"
+          >
+            Hapus
+          </button>
+        )}
+      </div>
+
+      <div className="mt-2 text-center text-[11px] text-mute dark:text-[#8f8b85] num">
+        WIB · {str ? formatDisplay(str) : "belum dipilih"}
+      </div>
+    </div>
+  );
+
   return (
-    <div ref={wrapRef} className="relative">
+    <div className="relative">
       <button
         type="button"
+        ref={triggerRef}
         id={id}
         disabled={disabled}
         onClick={() => !disabled && setOpen((v) => !v)}
@@ -141,94 +285,11 @@ export function DateInput({ value, onValueChange, className, withIcon = true, pr
         <ChevronRight className={cn("h-3.5 w-3.5 shrink-0 text-mute dark:text-[#8f8b85] transition-transform", open && (placeUp ? "-rotate-90" : "rotate-90"))} strokeWidth={1.75} />
       </button>
 
-      {open && (
-        <div
-          role="dialog"
-          aria-label="Pilih tanggal"
-          className={cn(
-            "absolute left-0 right-0 sm:right-auto sm:w-[304px] z-30 rounded-[18px] border hairline bg-white dark:bg-[#1e1e1e] p-3 fade-in",
-            placeUp ? "bottom-full mb-2" : "top-full mt-2"
-          )}
-          style={{ boxShadow: "none" }}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => setView(new Date(year, month - 1, 1))}
-              className="press grid h-8 w-8 place-items-center rounded-full border hairline bg-[#f3f1ec] dark:bg-[#141414] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]"
-              aria-label="Bulan sebelumnya"
-            >
-              <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-            </button>
-            <div className="text-[13px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2]">
-              {MONTHS_ID[month]} <span className="num">{year}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setView(new Date(year, month + 1, 1))}
-              className="press grid h-8 w-8 place-items-center rounded-full border hairline bg-[#f3f1ec] dark:bg-[#141414] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]"
-              aria-label="Bulan berikutnya"
-            >
-              <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
-            </button>
-          </div>
-
-          <div className="mt-3 grid grid-cols-7 gap-1 text-center">
-            {WEEKDAYS.map((w) => (
-              <div key={w} className="py-1 text-[11px] font-medium tracking-wide text-mute dark:text-[#8f8b85]">{w}</div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-1">
-            {cells.map((d, i) => {
-              if (d === null) return <div key={`e-${i}`} className="h-8 w-8" />;
-              const iso = toISO(new Date(year, month, d));
-              const isSelected = iso === str;
-              const isToday = iso === todayISO;
-              return (
-                <button
-                  key={iso}
-                  type="button"
-                  onClick={() => pickDay(d)}
-                  className={cn(
-                    "press h-8 w-8 rounded-full text-[13px] num tabular-nums grid place-items-center border border-transparent transition-colors",
-                    isSelected
-                      ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink dark:border-[#e9e6e2]"
-                      : "text-ink dark:text-[#e9e6e2] hover:bg-[#f3f1ec] dark:hover:bg-[#222] hover:border-[#e6e3df] dark:hover:border-[#2a2a2a]",
-                    !isSelected && isToday && "border-ink dark:border-[#e9e6e2]"
-                  )}
-                >
-                  {d}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-3 flex items-center justify-between gap-2 border-t hairline pt-3">
-            <button
-              type="button"
-              onClick={() => {
-                onValueChange(toWIBInputValue(new Date()));
-                setOpen(false);
-              }}
-              className="press text-[12px] font-medium text-mute dark:text-[#a7a39d] hover:text-ink dark:hover:text-[#e9e6e2] rounded-full border hairline px-3 py-1.5 bg-[#f3f1ec] dark:bg-[#141414]"
-            >
-              Hari ini
-            </button>
-            {!isEmpty && (
-              <button
-                type="button"
-                onClick={() => { onValueChange(""); setOpen(false); }}
-                className="text-[12px] font-medium text-mute dark:text-[#8f8b85] hover:text-[#b42318] dark:hover:text-[#fca5a5]"
-              >
-                Hapus
-              </button>
-            )}
-          </div>
-
-          <div className="mt-2 text-center text-[11px] text-mute dark:text-[#8f8b85] num">
-            WIB · {str ? formatDisplay(str) : "belum dipilih"}
-          </div>
+      {open && canPortal && createPortal(calendar, document.body)}
+      {/* fallback inline (SSR before mount) — hidden, prevents flash */}
+      {open && !canPortal && (
+        <div className="absolute left-0 right-0 top-full mt-2 z-30 rounded-[18px] border hairline bg-white dark:bg-[#1e1e1e] p-3">
+          <div className="text-center text-[11px] text-mute">Memuat kalender…</div>
         </div>
       )}
     </div>

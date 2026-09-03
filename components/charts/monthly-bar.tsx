@@ -14,12 +14,12 @@ export function MonthlyBar({ data }: { data: { month: string; income: number; ex
       </div>
     );
   return (
-    <div className="h-[180px] w-full">
+    <div className="h-[160px] sm:h-[180px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} barCategoryGap={22}>
           <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#2a2a2a" : "#e6e3df"} vertical={false} />
-          <XAxis dataKey="month" tick={{ fontSize: 11, fill: isDark ? "#8f8b85" : "#6b6b6b" }} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => formatRupiahCompact(v)} tick={{ fontSize: 11, fill: isDark ? "#8f8b85" : "#6b6b6b" }} width={68} axisLine={false} tickLine={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 11, fill: isDark ? "#8f8b85" : "#6b6b6b" }} axisLine={false} tickLine={false} interval={0} />
+          <YAxis tickFormatter={(v) => formatRupiahCompact(v)} tick={{ fontSize: 10, fill: isDark ? "#8f8b85" : "#6b6b6b" }} width={56} axisLine={false} tickLine={false} />
           <Tooltip
             formatter={(v: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(v)}
             contentStyle={{
@@ -31,7 +31,7 @@ export function MonthlyBar({ data }: { data: { month: string; income: number; ex
               color: isDark ? "#e9e6e2" : "#1a1a1a",
             }}
           />
-          <Legend wrapperStyle={{ fontSize: 11, color: isDark ? "#8f8b85" : "#6b6b6b" }} iconType="circle" />
+          <Legend wrapperStyle={{ fontSize: 11, color: isDark ? "#8f8b85" : "#6b6b6b", whiteSpace: "normal", lineHeight: 1.4, marginTop: 4 }} iconType="circle" />
           <Bar dataKey="income" name="Masuk" fill={isDark ? "#4ade80" : "#1a7a4a"} radius={[8, 8, 0, 0]} />
           <Bar dataKey="expense" name="Keluar" fill={isDark ? "#fca5a5" : "#b42318"} radius={[8, 8, 0, 0]} />
         </BarChart>
