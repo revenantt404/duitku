@@ -304,9 +304,10 @@ export function useTransactions() {
       demo[1]((prev) => [row, ...prev]);
       return row;
     }
-    // optimistic: prepend temp tx
+    // optimistic: prepend temp tx (idempotency key — aman dari double-tap)
+    const uid = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const temp: UTx = {
-      id: `t_temp_${Date.now()}`,
+      id: `t_temp_${uid}`,
       walletId: input.walletId,
       toWalletId: input.toWalletId || null,
       categoryId: input.categoryId || null,
@@ -314,7 +315,7 @@ export function useTransactions() {
       amount: Number(input.amount),
       description: input.description || null,
       date: (input.date instanceof Date ? (input.date as Date).toISOString() : new Date(input.date as any).toISOString()),
-      transferId: input.type === "TRANSFER" ? `tr_temp_${Date.now()}` : null,
+      transferId: input.type === "TRANSFER" ? `tr_temp_${uid}` : null,
     };
     const prev = qc.getQueryData<UTx[]>(["transactions"]);
     qc.setQueryData<UTx[]>(["transactions"], (old) => [temp, ...(old ?? [])]);

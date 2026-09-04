@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DashboardSkeleton } from "@/components/skeletons";
 import { Progress } from "@/components/ui/progress";
 import { ExpenseDonut } from "@/components/charts/expense-donut";
 import { MonthlyBar } from "@/components/charts/monthly-bar";
@@ -146,7 +147,11 @@ export default function DashboardPage() {
   }
 
   const monthLabel = new Date(monthFilter.year, monthFilter.month, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" });
-  const isLoading = !walletsHook.hydrated || walletsHook.loading || txHook.loading;
+  // Semua query harus settle sebelum render angka — kalau cuma wallets+transactions,
+  // Masuk/Keluar/Sisa flash "Rp 0" dan list flash "Belum ada transaksi" padahal data lagi jalan.
+  const isLoading =
+    !walletsHook.hydrated || walletsHook.loading ||
+    txHook.loading || catsHook.loading || budgetsHook.loading || goalsHook.loading;
 
   const onboardingStep = useMemo(() => {
     const s1 = wallets.length > 0;
@@ -156,8 +161,12 @@ export default function DashboardPage() {
     return { s1, s2, s3, done, show: walletsHook.hydrated && !s1 };
   }, [wallets.length, categories.length, transactions.length, walletsHook.hydrated]);
 
+  // First load: tampilkan skeleton full-page (layout sama persis dengan konten asli)
+  // biar gak ada flash "—" / "Rp 0" / empty state sebelum query settle.
+  if (isLoading) return <DashboardSkeleton />;
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 page-in">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Dashboard</h1>
@@ -190,7 +199,7 @@ export default function DashboardPage() {
       <Card className="rounded-[18px] overflow-hidden shadow-sm">
         <CardContent className="p-6">
           <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Total Saldo</div>
-          <div className="mt-1 text-[30px] font-semibold tracking-tight leading-none num text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiah(totalSaldo)}</div>
+          <div className="mt-1 text-[30px] font-semibold tracking-tight leading-none num text-ink dark:text-[#e9e6e2]">{formatRupiah(totalSaldo)}</div>
           <div className="mt-5 grid grid-cols-3 gap-4 border-t hairline pt-5">
             <div>
               <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Masuk</div>

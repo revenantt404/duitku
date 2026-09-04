@@ -69,7 +69,9 @@ export function TransactionForm({
   }, [wallets, form]);
 
   async function handleSubmit(data: TransactionInput) {
-    await onSubmit(data);
+    // Instant close: tutup modal dulu (0ms), sync ke server belakangan.
+    // Optimistic row + rollback sudah di-handle di lib/use-data.ts (txHook.create).
+    const snapshot = { ...data };
     setOpen(false);
     form.reset({
       type: defaultType as any,
@@ -80,7 +82,14 @@ export function TransactionForm({
       description: "",
       date: new Date() as any,
     });
+    try {
+      await onSubmit(snapshot);
+    } catch {
+      // error toast + rollback sudah di-handle parent & hook — jangan unhandled reject
+    }
   }
+
+  const submitting = form.formState.isSubmitting;
 
   return (
     <>
@@ -375,8 +384,8 @@ export function TransactionForm({
                 <Button type="button" variant="outline" className="flex-1 h-11" onClick={() => setOpen(false)}>
                   Batal
                 </Button>
-                <Button type="submit" className="flex-1 h-11" disabled={!canSubmit}>
-                  Simpan
+                <Button type="submit" className="flex-1 h-11" disabled={!canSubmit || submitting} aria-busy={submitting}>
+                  {submitting ? "Menyimpan…" : "Simpan"}
                 </Button>
               </div>
               {!canSubmit && (

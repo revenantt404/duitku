@@ -1,26 +1,48 @@
 "use client";
 import * as React from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useTheme } from "@/components/theme-provider";
+import { formatRupiah, formatRupiahCompact } from "@/lib/utils";
 
-const PALETTE = ["#1a7a4a", "#b42318", "#a16207", "#1a1a1a", "#6b6b6b", "#9a9590", "#c9c5c0", "#e6e3df"];
+// Vibrant palette yang lolos kontras di dark #1d1d1d maupun light #fff
+const PALETTE = ["#2DD4BF", "#FB7185", "#FBBF24", "#A78BFA", "#38BDF8", "#4ADE80", "#FB923C", "#F472B6"];
 
-function useDonutBreakpoint() {
-  const [w, setW] = React.useState<number>(() => (typeof window !== "undefined" ? window.innerWidth : 1024));
-  React.useEffect(() => {
-    function onResize() { setW(window.innerWidth); }
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-  if (w < 380) return "xs" as const;
-  if (w < 640) return "sm" as const;
-  return "lg" as const;
+// Tooltip custom: text SELALU terang di dark mode.
+// Tooltip bawaan Recharts mewarnai tiap baris dengan `entry.color || '#000'`
+// (warna slice / fallback hitam) → di bg gelap jadi tidak terbaca.
+function DonutTooltip({ active, payload, isDark }: { active?: boolean; payload?: any[]; isDark: boolean }) {
+  if (!active || !payload?.length) return null;
+  const text = isDark ? "#e9e6e2" : "#1a1a1a";
+  const sub = isDark ? "#a7a39d" : "#6b6b6b";
+  return (
+    <div
+      className="rounded-xl border px-3 py-2 text-[12px] space-y-1"
+      style={{
+        background: isDark ? "#1d1d1d" : "#fff",
+        borderColor: isDark ? "#2a2a2a" : "#e6e3df",
+        boxShadow: "none",
+      }}
+    >
+      {payload.map((entry: any, i: number) => (
+        <div key={i} className="flex items-center gap-1.5 whitespace-nowrap">
+          <span
+            className="h-2.5 w-2.5 rounded-full shrink-0"
+            style={{ background: entry.payload?.color ?? entry.color ?? sub }}
+            aria-hidden
+          />
+          <span className="font-medium" style={{ color: text }}>{entry.name}</span>
+          <span className="num" style={{ color: sub }}>{formatRupiah(entry.value)}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function ExpenseDonut({ data }: { data: { name: string; value: number; color: string }[] }) {
   const { resolved } = useTheme();
   const isDark = resolved === "dark";
-  const bp = useDonutBreakpoint();
+
+  const total = React.useMemo(() => data.reduce((a, b) => a + b.value, 0), [data]);
 
   if (!data.length)
     return (
@@ -32,44 +54,64 @@ export function ExpenseDonut({ data }: { data: { name: string; value: number; co
     );
 
   const filled = data.map((d, i) => ({ ...d, color: PALETTE[i % PALETTE.length] }));
-
-  // responsive radii per Q17: 72/82/90 + inner 52/58/62
-  const outerRadius = bp === "xs" ? 72 : bp === "sm" ? 82 : 90;
-  const innerRadius = bp === "xs" ? 52 : bp === "sm" ? 58 : 62;
+  const stroke = isDark ? "#1d1d1d" : "#fff";
 
   return (
-    <div className="h-[160px] sm:h-[180px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie data={filled} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={innerRadius} outerRadius={outerRadius} paddingAngle={3} stroke={isDark ? "#1d1d1d" : "#fff"} strokeWidth={2}>
-            {filled.map((e, i) => (
-              <Cell key={i} fill={e.color} stroke={isDark ? "#1d1d1d" : "#fff"} />
-            ))}
-          </Pie>
-          <Tooltip
-            formatter={(v: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(v)}
-            contentStyle={{
-              borderRadius: 12,
-              border: `1px solid ${isDark ? "#2a2a2a" : "#e6e3df"}`,
-              fontSize: 11,
-              boxShadow: "none",
-              background: isDark ? "#1d1d1d" : "#fff",
-              color: isDark ? "#e9e6e2" : "#1a1a1a",
-            }}
-          />
-          <Legend
-            verticalAlign="bottom"
-            iconType="circle"
-            wrapperStyle={{
-              fontSize: 11,
-              color: isDark ? "#8f8b85" : "#6b6b6b",
-              whiteSpace: "normal",
-              lineHeight: 1.4,
-              marginTop: 8,
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+    <div>
+      {/* Pie diberi ruang sendiri — legend di luar ResponsiveContainer biar gak makan height chart */}
+      <div className="relative h-[220px] sm:h-[240px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+            <Pie
+              data={filled}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={68}
+              outerRadius={96}
+              paddingAngle={3}
+              stroke={stroke}
+              strokeWidth={2}
+            >
+              {filled.map((e, i) => (
+                <Cell key={i} fill={e.color} stroke={stroke} />
+              ))}
+            </Pie>
+            <Tooltip content={<DonutTooltip isDark={isDark} />} />
+          </PieChart>
+        </ResponsiveContainer>
+        {/* Center total — absolute biar gak ganggu layout Recharts */}
+        <div className="pointer-events-none absolute inset-0 grid place-items-center">
+          <div className="text-center">
+            <div className="text-[15px] font-semibold tracking-tight num text-ink dark:text-[#e9e6e2]">
+              {formatRupiahCompact(total)}
+            </div>
+            <div className="text-[11px] text-mute dark:text-[#a7a39d]">
+              {filled.length} kategori
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Legend custom: wrap rapi, kontras, ada nominal + % */}
+      <ul className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+        {filled.map((e) => {
+          const pct = total ? Math.round((e.value / total) * 100) : 0;
+          return (
+            <li
+              key={e.name}
+              className="inline-flex items-center gap-1.5 text-[12px] font-medium text-ink dark:text-[#e9e6e2]"
+              title={`${e.name} — ${formatRupiah(e.value)} (${pct}%)`}
+            >
+              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: e.color }} aria-hidden />
+              <span className="truncate max-w-[140px]">{e.name}</span>
+              <span className="num text-mute dark:text-[#a7a39d]">
+                {formatRupiahCompact(e.value)} · {pct}%
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
