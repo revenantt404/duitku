@@ -1,78 +1,13 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, Wallet, Moon, Sun } from "lucide-react";
+import { LoginForm } from "@/components/login-form";
+import { ArrowLeft, Wallet, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
   const { resolved, toggle } = useTheme();
   const isDark = resolved === "dark";
-
-  const supabase = createClient();
-  const isPlaceholder =
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder") ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "placeholder" ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("localhost");
-
-  async function handleGoogle() {
-    if (isPlaceholder) {
-      setMsg("Login Google belum aktif. Hubungi admin atau coba masuk dengan email & password di bawah.");
-      return;
-    }
-    setLoading(true);
-    setMsg(null);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) setMsg(error.message);
-    setLoading(false);
-  }
-
-  async function handlePasswordLogin(e: React.FormEvent) {
-    e.preventDefault();
-    if (isPlaceholder) {
-      localStorage.setItem("duitku_demo_user", JSON.stringify({ email: email || "demo@duitku.local", name: "Demo User" }));
-      router.push("/dashboard");
-      return;
-    }
-    setLoading(true);
-    setMsg(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setMsg(error.message);
-    else router.push("/dashboard");
-    setLoading(false);
-  }
-
-  async function handleSignup() {
-    if (isPlaceholder) {
-      localStorage.setItem("duitku_demo_user", JSON.stringify({ email: email || "demo@duitku.local", name: "Demo User" }));
-      router.push("/dashboard");
-      return;
-    }
-    if (!email || !password) { setMsg("Isi email & password buat daftar."); return; }
-    setLoading(true);
-    setMsg(null);
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) setMsg(error.message);
-    else setMsg("Akun dibuat. Cek email buat verifikasi, atau langsung login kalau verifikasi dimatikan di Supabase.");
-    setLoading(false);
-  }
 
   return (
     <div className="min-h-screen grid place-items-center bg-paper dark:bg-[#141414] px-4 py-8">
@@ -99,51 +34,8 @@ export default function LoginPage() {
             <CardTitle className="font-display text-[18px] mt-3 text-ink dark:text-[#e9e6e2]">Masuk ke DuitKu</CardTitle>
             <CardDescription className="text-mute dark:text-[#a7a39d]">Lanjut dengan Google — atau pakai email &amp; password.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 pb-6">
-            <Button
-              onClick={handleGoogle}
-              variant="outline"
-              className="w-full h-10 text-[13px] font-medium bg-white hover:bg-[#f8f9fa] border-[#dadce0] text-[#1a1a1a] dark:bg-white dark:hover:bg-[#f8f9fa] dark:text-[#1a1a1a] dark:border-[#dadce0]"
-              disabled={loading}
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.75} /> : (
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" className="shrink-0">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09Z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23Z" />
-                  <path fill="#FBBC05" d="M5.84 14.09A6.97 6.97 0 0 1 5.48 12c0-.72.13-1.42.36-2.09V7.07H2.18A11 11 0 0 0 1 12c0 1.78.43 3.45 1.18 4.93l3.66-2.84Z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53Z" />
-                </svg>
-              )}
-              Lanjut dengan Google
-            </Button>
-
-            <div className="relative py-1">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t hairline" /></div>
-              <div className="relative flex justify-center"><span className="bg-white dark:bg-[#1d1d1d] px-2 text-[12px] text-mute dark:text-[#8f8b85]">atau</span></div>
-            </div>
-
-            <form onSubmit={handlePasswordLogin} className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="kamu@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button type="submit" className="h-10" disabled={loading}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.75} /> : null}
-                  Masuk
-                </Button>
-                <Button type="button" variant="outline" className="h-10" onClick={handleSignup} disabled={loading}>Daftar</Button>
-              </div>
-              <div className="text-center">
-                <Link href="/reset-password" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Lupa password?</Link>
-              </div>
-            </form>
-
-            {msg && <div className="rounded-[14px] bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] text-[12px] leading-relaxed p-3 border hairline">{msg}</div>}
+          <CardContent className="pb-6">
+            <LoginForm autoFocus />
           </CardContent>
         </Card>
       </div>

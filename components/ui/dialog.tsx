@@ -3,27 +3,72 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
-interface DialogProps { open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode; }
-export function Dialog({ open, onOpenChange, children }: DialogProps) {
+interface DialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  children: React.ReactNode;
+  /** "sheet" = bottom-sheet di mobile (default, perilaku lama) · "center" = modal tengah di semua ukuran */
+  position?: "sheet" | "center";
+  /** backdrop blur + redup biar halaman bawah gak ngedistract (dipakai login) */
+  dim?: boolean;
+}
+export function Dialog({ open, onOpenChange, children, position = "sheet", dim = false }: DialogProps) {
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onOpenChange]);
   if (!open) return null;
+  const centered = position === "center";
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="fixed inset-0 bg-[rgba(0,0,0,0.32)] dark:bg-black/60 fade-in" onClick={() => onOpenChange(false)} aria-hidden />
-      <div className="relative z-50 w-full sm:max-w-[440px] max-h-[92dvh] sm:max-h-[90vh] overflow-auto overscroll-contain sm:scale-in sheet-in sm:sheet-in-none">
+    <div
+      className={
+        centered
+          ? "fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+          : "fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      }
+      role="presentation"
+    >
+      <div
+        className={
+          dim
+            ? "fixed inset-0 bg-black/45 dark:bg-black/70 backdrop-blur-md backdrop-saturate-150 fade-in"
+            : "fixed inset-0 bg-[rgba(0,0,0,0.32)] dark:bg-black/60 fade-in"
+        }
+        onClick={() => onOpenChange(false)}
+        aria-hidden
+      />
+      <div
+        className={
+          centered
+            ? "relative z-50 w-full sm:max-w-[440px] max-h-[92dvh] sm:max-h-[90vh] overflow-auto overscroll-contain scale-in"
+            : "relative z-50 w-full sm:max-w-[440px] max-h-[92dvh] sm:max-h-[90vh] overflow-auto overscroll-contain sm:scale-in sheet-in sm:sheet-in-none"
+        }
+      >
         {children}
       </div>
     </div>
   );
 }
-export function DialogContent({ className, children, onClose }: { className?: string; children: React.ReactNode; onClose?: () => void }) {
+export function DialogContent({ className, children, onClose, grabber = true }: { className?: string; children: React.ReactNode; onClose?: () => void; grabber?: boolean }) {
   return (
     <div
+      role="dialog"
+      aria-modal="true"
       className={cn(
-        "bg-white dark:bg-[#1d1d1d] border hairline w-full p-6 pb-[max(20px,env(safe-area-inset-bottom))] sm:pb-6 rounded-t-[20px] sm:rounded-[18px] shadow-sm",
+        "relative bg-white dark:bg-[#1d1d1d] border hairline w-full p-6 pb-[max(20px,env(safe-area-inset-bottom))] sm:pb-6 rounded-t-[20px] sm:rounded-[18px] shadow-sm",
         className
       )}
     >
-      <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[#e6e3df] dark:bg-[#2a2a2a] sm:hidden" aria-hidden />
+      {grabber && <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[#e6e3df] dark:bg-[#2a2a2a] sm:hidden" aria-hidden />}
       {onClose && (
         <button
           onClick={onClose}
