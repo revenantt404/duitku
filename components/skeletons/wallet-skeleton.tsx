@@ -4,15 +4,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function WalletSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <Skeleton className="h-[22px] w-[80px]" />
-          <Skeleton className="h-[13px] w-[220px]" />
-        </div>
-        <Skeleton className="h-9 w-[90px] rounded-full shrink-0" />
+      {/* hero editorial — tanpa pil eyebrow */}
+      <div className="space-y-2">
+        <Skeleton className="h-[38px] w-[230px]" />
+        <Skeleton className="h-[38px] w-[190px]" />
+        <Skeleton className="h-[14px] w-[240px]" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <Skeleton className="h-[40px] w-full rounded-full" />
+
+      {/* total panel inverted */}
+      <div className="rounded-[18px] bg-ink dark:bg-[#e9e6e2] p-5">
+        <Skeleton className="h-[11px] w-[140px] opacity-60" />
+        <Skeleton className="mt-2 h-[32px] w-[180px] opacity-60" />
+        <Skeleton className="mt-1 h-[12px] w-[120px] opacity-40" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
         {[0, 1, 2, 3].map((i) => (
           <Card key={i} className="rounded-[18px] shadow-sm">
             <CardContent className="p-5 space-y-3">
@@ -27,14 +35,6 @@ export function WalletSkeleton() {
           </Card>
         ))}
       </div>
-
-      <Card className="shadow-sm">
-        <CardContent className="p-4 space-y-3">
-          <Skeleton className="h-[14px] w-[120px]" />
-          <Skeleton className="h-9 w-full rounded-[14px]" />
-          <Skeleton className="h-9 w-full rounded-[14px]" />
-        </CardContent>
-      </Card>
     </div>
   );
 }

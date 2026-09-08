@@ -8,10 +8,12 @@ import { ExpenseDonut } from "@/components/charts/expense-donut";
 import { MonthlyBar } from "@/components/charts/monthly-bar";
 import { TransactionForm } from "@/components/transaction-form";
 import { WalletCard } from "@/components/wallet-card";
+import { PageHero, HeroPill, HeroItalic, HeroCoin, SectionHead } from "@/components/page-hero";
+import { Ticker } from "@/components/ticker";
 import { formatRupiah, formatRupiahCompact, formatDateShort } from "@/lib/utils";
 import { useWallets, useCategories, useTransactions, useBudgets, useGoals } from "@/lib/use-data";
 import { useToast } from "@/components/ui/toast";
-import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, TrendingUp, TrendingDown, Receipt, Target as TargetIcon } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, TrendingUp, TrendingDown, Check, Zap } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -161,19 +163,79 @@ export default function DashboardPage() {
     return { s1, s2, s3, done, show: walletsHook.hydrated && !s1 };
   }, [wallets.length, categories.length, transactions.length, walletsHook.hydrated]);
 
+  const tickerItems = useMemo(() => {
+    const items = [
+      `${monthLabel} · ${wallets.length} dompet`,
+      `Masuk ${formatRupiahCompact(incomeMonth)}`,
+      `Keluar ${formatRupiahCompact(expenseMonth)}`,
+      `Sisa ${formatRupiahCompact(sisaMonth)}`,
+    ];
+    for (const d of donutData.slice(0, 3)) items.push(`${d.name} ${formatRupiahCompact(d.value)}`);
+    items.push(`${transactions.length} transaksi tercatat`);
+    return items;
+  }, [monthLabel, wallets.length, incomeMonth, expenseMonth, sisaMonth, donutData, transactions.length]);
+
+  const spark = useMemo(() => {
+    const vals = barData.map((b) => b.expense);
+    const max = Math.max(1, ...vals);
+    const W = 200;
+    const H = 48;
+    const pts = vals.map((v, i) => {
+      const x = vals.length === 1 ? W : (i / (vals.length - 1)) * W;
+      const y = H - 6 - (v / max) * (H - 14);
+      return [x, y] as const;
+    });
+    if (pts.length === 0) return { path: "", end: [W, 8] as const };
+    let d = `M0 ${H - 10}`;
+    pts.forEach(([x, y], i) => {
+      if (i === 0) d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+      else {
+        const [px, py] = pts[i - 1];
+        const cx = (px + x) / 2;
+        d += ` C ${cx.toFixed(1)} ${py.toFixed(1)}, ${cx.toFixed(1)} ${y.toFixed(1)}, ${x.toFixed(1)} ${y.toFixed(1)}`;
+      }
+    });
+    return { path: d, end: pts[pts.length - 1] };
+  }, [barData]);
+
   // First load: tampilkan skeleton full-page (layout sama persis dengan konten asli)
   // biar gak ada flash "—" / "Rp 0" / empty state sebelum query settle.
   if (isLoading) return <DashboardSkeleton />;
 
   return (
-    <div className="space-y-5 page-in">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Dashboard</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">{monthLabel} · total saldo semua dompet</p>
-        </div>
-        <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} fab />
-      </div>
+    <div className="space-y-5">
+      <PageHero
+        title={
+          <>
+            Duit bulan ini,
+            <br />
+            <span className="mt-2 inline-flex flex-wrap items-center gap-x-2.5 gap-y-2">
+              <HeroPill>jelas</HeroPill>
+              <HeroItalic>terpantau.</HeroItalic>
+              <HeroCoin compact />
+            </span>
+          </>
+        }
+        desc={
+          <>
+            Total saldo <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiah(totalSaldo)}</strong>{" "}
+            · masuk <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(incomeMonth)}</strong>, keluar{" "}
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(expenseMonth)}</strong>. Warm paper,
+            tegas, tanpa distraksi.
+          </>
+        }
+        meta={[
+          `${wallets.length} dompet aktif`,
+          `${monthTx.length} transaksi bulan ini`,
+          sisaMonth < 0 ? "Bulan ini minus" : "Arus aman",
+        ].map((t) => (
+          <span key={t} className="inline-flex items-center gap-1.5">
+            <Check className="h-3.5 w-3.5" strokeWidth={2.25} /> {t}
+          </span>
+        ))}
+      />
+
+      <Ticker items={tickerItems} />
 
       {onboardingStep.show && (
         <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] overflow-hidden">
@@ -196,36 +258,43 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      <Card className="rounded-[18px] overflow-hidden shadow-sm">
-        <CardContent className="p-6">
-          <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Total Saldo</div>
-          <div className="mt-1 text-[30px] font-semibold tracking-tight leading-none num text-ink dark:text-[#e9e6e2]">{formatRupiah(totalSaldo)}</div>
-          <div className="mt-5 grid grid-cols-3 gap-4 border-t hairline pt-5">
-            <div>
-              <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Masuk</div>
-              <div className="mt-1 text-[14px] font-semibold tracking-tight num text-[#1a7a4a] dark:text-[#4ade80]">{formatRupiahCompact(incomeMonth)}</div>
-              <div className="text-[11px] text-mute dark:text-[#8f8b85]">bulan ini</div>
-            </div>
-            <div className="border-l hairline pl-4">
-              <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Keluar</div>
-              <div className="mt-1 text-[14px] font-semibold tracking-tight num text-[#b42318] dark:text-[#fca5a5]">{formatRupiahCompact(expenseMonth)}</div>
-              <div className="text-[11px] text-mute dark:text-[#8f8b85]">bulan ini</div>
-            </div>
-            <div className="border-l hairline pl-4">
-              <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Sisa</div>
-              <div className={`mt-1 text-[14px] font-semibold tracking-tight num ${sisaMonth < 0 ? "text-[#b42318] dark:text-[#fca5a5]" : sisaMonth > 0 ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-ink dark:text-[#e9e6e2]"}`}>{formatRupiahCompact(sisaMonth)}</div>
-              <div className={`text-[11px] font-medium ${sisaMonth < 0 ? "text-[#b42318] dark:text-[#fca5a5]" : sisaMonth > 0 ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#a7a39d]"}`}>{sisaMonth < 0 ? "minus" : "aman"}</div>
-            </div>
+      {/* panel saldo — inverted ink ala demo landing, flat biar gak banding */}
+      <div className="relative overflow-hidden rounded-[18px] bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] p-5 panel-shadow">
+        <div className="relative flex items-center justify-between gap-2">
+          <div className="text-[11px] font-medium tracking-[0.12em] uppercase opacity-70">Total Saldo · {monthLabel}</div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/15 dark:bg-black/10 px-2 py-0.5 text-[11px] font-semibold num">
+              <Zap className="h-3 w-3" strokeWidth={2.25} /> {monthTx.length} trx
+            </span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="relative mt-1 text-[28px] sm:text-[32px] font-semibold tracking-tight leading-none num">{formatRupiah(totalSaldo)}</div>
+        <svg viewBox="0 0 200 48" className="relative mt-3 h-12 w-full" fill="none" aria-hidden>
+          <path
+            d={spark.path}
+            stroke="currentColor"
+            strokeOpacity="0.9"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+          <circle cx={spark.end[0]} cy={spark.end[1]} r="3.5" fill="currentColor" />
+        </svg>
+        <div className="relative mt-3 grid grid-cols-3 gap-3 text-[11px] border-t border-white/15 dark:border-black/15 pt-3">
+          <div><div className="tracking-[0.1em] opacity-60">MASUK</div><div className="font-semibold mt-0.5 num text-[13px]">{formatRupiahCompact(incomeMonth)}</div></div>
+          <div className="border-l border-white/15 dark:border-black/15 pl-3"><div className="tracking-[0.1em] opacity-60">KELUAR</div><div className="font-semibold mt-0.5 num text-[13px]">{formatRupiahCompact(expenseMonth)}</div></div>
+          <div className="border-l border-white/15 dark:border-black/15 pl-3"><div className="tracking-[0.1em] opacity-60">SISA</div><div className="font-semibold mt-0.5 num text-[13px]">{formatRupiahCompact(sisaMonth)} · {sisaMonth < 0 ? "minus" : "aman"}</div></div>
+        </div>
+      </div>
 
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[12px] font-semibold tracking-wide text-mute dark:text-[#8f8b85] uppercase">Dompet</h2>
-          <Link href="/dompet" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola →</Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
+        <SectionHead
+          kicker="Dompet"
+          title={
+            <>Saldo dipisah, <span className="italic">rapi.</span></>
+          }
+          action={<Link href="/dompet" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola →</Link>}
+        />
+        <div className="mt-3 grid grid-cols-2 gap-3">
           {balances.map(({ wallet, balance }) => (
             <WalletCard key={wallet.id} wallet={wallet as any} balance={balance} negative={balance < 0} />
           ))}
@@ -243,15 +312,24 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pengeluaran per kategori</CardTitle>
-          <CardDescription>{monthLabel}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ExpenseDonut data={donutData} />
-        </CardContent>
-      </Card>
+      <div>
+        <SectionHead
+          kicker="Grafik jujur"
+          title={
+            <>Borosnya <HeroPill className="text-[15px] sm:text-[17px]">kelihatan.</HeroPill></>
+          }
+          desc={monthLabel}
+        />
+        <Card className="mt-3">
+          <CardHeader>
+            <CardTitle>Pengeluaran per kategori</CardTitle>
+            <CardDescription>{monthLabel}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ExpenseDonut data={donutData} />
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
@@ -263,121 +341,137 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <Card className="overflow-visible">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="flex items-center gap-1.5">Transaksi terbaru</CardTitle>
-            <CardDescription>5 terakhir · group per tanggal</CardDescription>
-          </div>
-          <Link href="/transaksi"><Button variant="outline" size="sm">Lihat semua</Button></Link>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {recent.length === 0 ? (
-            <div className="py-10 text-center">
-              <div className="mx-auto h-10 w-10 rounded-xl bg-[#f3f1ec] dark:bg-[#1d1d1d] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div>
-              <div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Belum ada transaksi</div>
-            </div>
-          ) : (
-            <div className="space-y-0">
-              {groupedRecent.map((group) => (
-                <div key={group.label}>
-                  <div className="sticky top-0 z-[2] -mx-[18px] md:-mx-6 flex items-center justify-between border-y hairline bg-white dark:bg-[#1d1d1d] px-[18px] md:px-6 py-2">
-                    <span className="kicker">{group.label}</span>
-                    <span className="text-[11px] tabular-nums text-mute dark:text-[#8f8b85]">{group.items.length}</span>
-                  </div>
-                  <div className="space-y-2 py-3">
-                    {group.items.map((t) => {
-                      const cat = t.categoryId ? catMap.get(t.categoryId) : null;
-                      const w = walletMap.get(t.walletId);
-                      const toW = t.toWalletId ? walletMap.get(t.toWalletId) : null;
-                      const isIncome = t.type === "INCOME";
-                      const isExpense = t.type === "EXPENSE";
-                      return (
-                        <div key={t.id} className="flex items-center justify-between rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] px-3.5 py-3 gap-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]"}`}>
-                              {isIncome ? <ArrowUpCircle className="h-4 w-4" strokeWidth={2} /> : isExpense ? <ArrowDownCircle className="h-4 w-4" strokeWidth={2} /> : <ArrowLeftRight className="h-4 w-4" strokeWidth={2} />}
+      <div>
+        <SectionHead
+          kicker="Terbaru"
+          title={
+            <>Arus kas, <HeroItalic>apa adanya.</HeroItalic></>
+          }
+          desc="5 terakhir · group per tanggal"
+          action={<Link href="/transaksi"><Button variant="outline" size="sm">Lihat semua</Button></Link>}
+        />
+        <Card className="overflow-visible mt-3">
+          <CardContent className="pt-4">
+            {recent.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="mx-auto h-10 w-10 rounded-xl bg-[#f3f1ec] dark:bg-[#1d1d1d] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div>
+                <div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Belum ada transaksi</div>
+              </div>
+            ) : (
+              <div className="space-y-0">
+                {groupedRecent.map((group) => (
+                  <div key={group.label}>
+                    <div className="sticky top-0 z-[2] -mx-[18px] md:-mx-6 flex items-center justify-between border-y hairline bg-white dark:bg-[#1d1d1d] px-[18px] md:px-6 py-2">
+                      <span className="kicker">{group.label}</span>
+                      <span className="text-[11px] tabular-nums text-mute dark:text-[#8f8b85]">{group.items.length}</span>
+                    </div>
+                    <div className="space-y-2 py-3">
+                      {group.items.map((t) => {
+                        const cat = t.categoryId ? catMap.get(t.categoryId) : null;
+                        const w = walletMap.get(t.walletId);
+                        const toW = t.toWalletId ? walletMap.get(t.toWalletId) : null;
+                        const isIncome = t.type === "INCOME";
+                        const isExpense = t.type === "EXPENSE";
+                        return (
+                          <div key={t.id} className="flex items-center justify-between rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] px-3.5 py-3 gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]"}`}>
+                                {isIncome ? <ArrowUpCircle className="h-4 w-4" strokeWidth={2} /> : isExpense ? <ArrowDownCircle className="h-4 w-4" strokeWidth={2} /> : <ArrowLeftRight className="h-4 w-4" strokeWidth={2} />}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-[13px] font-semibold leading-tight tracking-tight truncate text-ink dark:text-[#e9e6e2]">{t.type === "TRANSFER" ? `Transfer ${w?.name} → ${toW?.name}` : cat?.name || t.description || "—"}</div>
+                                <div className="text-[12px] text-mute dark:text-[#8f8b85] truncate">{t.description || w?.name} · {formatDateShort(t.date)}</div>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <div className="text-[13px] font-semibold leading-tight tracking-tight truncate text-ink dark:text-[#e9e6e2]">{t.type === "TRANSFER" ? `Transfer ${w?.name} → ${toW?.name}` : cat?.name || t.description || "—"}</div>
-                              <div className="text-[12px] text-mute dark:text-[#8f8b85] truncate">{t.description || w?.name} · {formatDateShort(t.date)}</div>
+                            <div className={`text-[13px] font-semibold shrink-0 num ${isIncome ? "text-[#1a7a4a] dark:text-[#4ade80]" : isExpense ? "text-[#b42318] dark:text-[#fca5a5]" : "text-mute dark:text-[#a7a39d]"}`}>
+                              {isIncome ? "+" : isExpense ? "−" : ""}{formatRupiah(t.amount)}
                             </div>
                           </div>
-                          <div className={`text-[13px] font-semibold shrink-0 num ${isIncome ? "text-[#1a7a4a] dark:text-[#4ade80]" : isExpense ? "text-[#b42318] dark:text-[#fca5a5]" : "text-mute dark:text-[#a7a39d]"}`}>
-                            {isIncome ? "+" : isExpense ? "−" : ""}{formatRupiah(t.amount)}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {insight && (
-        <Card className="bg-[#f3f1ec] dark:bg-[#1d1d1d] border hairline">
-          <CardContent className="p-5">
-            <div className={`flex items-center gap-1.5 text-[12px] font-semibold ${insight.up ? "text-[#b42318] dark:text-[#fca5a5]" : "text-[#1a7a4a] dark:text-[#4ade80]"}`}>
-              {insight.up ? <TrendingUp className="h-4 w-4" strokeWidth={1.75} /> : <TrendingDown className="h-4 w-4" strokeWidth={1.75} />} Insight
-            </div>
-            <div className="text-[13px] font-medium mt-1 text-ink dark:text-[#e9e6e2]">
-              {insight.up ? `Pengeluaran naik ${insight.pct}% vs bulan lalu.` : `Pengeluaran turun ${Math.abs(Number(insight.pct))}% vs bulan lalu.`}
-            </div>
-            <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Lalu {formatRupiahCompact(insight.prev)} → Kini {formatRupiahCompact(insight.cur)}</div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
+      </div>
+
+      {insight && (
+        <figure className="rounded-[18px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-5">
+          <div className={`flex items-center gap-1.5 text-[12px] font-semibold ${insight.up ? "text-[#b42318] dark:text-[#fca5a5]" : "text-[#1a7a4a] dark:text-[#4ade80]"}`}>
+            {insight.up ? <TrendingUp className="h-4 w-4" strokeWidth={1.75} /> : <TrendingDown className="h-4 w-4" strokeWidth={1.75} />} Insight jujur
+          </div>
+          <blockquote className="mt-2.5 font-display text-[17px] leading-snug tracking-tight italic">
+            {insight.up ? `Pengeluaran naik ${insight.pct}% vs bulan lalu.` : `Pengeluaran turun ${Math.abs(Number(insight.pct))}% vs bulan lalu.`}
+          </blockquote>
+          <figcaption className="text-[12px] text-mute dark:text-[#8f8b85] mt-1.5 num">Lalu {formatRupiahCompact(insight.prev)} → Kini {formatRupiahCompact(insight.cur)}</figcaption>
+        </figure>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Anggaran bulan ini</CardTitle>
-          <CardDescription>{budgets.length} kategori dilimit</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {budgets.slice(0, 3).map((b) => {
-            const cat = catMap.get(b.categoryId);
-            const spent = monthTx.filter((t) => t.type === "EXPENSE" && t.categoryId === b.categoryId).reduce((a, v) => a + v.amount, 0);
-            const pct = b.amount ? Math.min(100, Math.round((spent / b.amount) * 100)) : 0;
-            const over = spent > b.amount;
-            const near = !over && pct >= 80;
-            return (
-              <div key={b.id}>
-                <div className="flex justify-between text-[12px] mb-1.5">
-                  <span className="font-semibold text-ink dark:text-[#e9e6e2]">{cat?.name}</span>
-                  <span className={`num ${over ? "text-[#b42318] dark:text-[#fca5a5]" : near ? "text-[#a16207] dark:text-[#fcd34d]" : "text-mute dark:text-[#8f8b85]"}`}>{pct}% · {formatRupiahCompact(spent)} / {formatRupiahCompact(b.amount)}</span>
+      <div>
+        <SectionHead
+          kicker="Limit bulanan"
+          title={
+            <>Anggaran, <span className="italic">terjaga.</span></>
+          }
+          desc={`${budgets.length} kategori dilimit`}
+          action={<Link href="/anggaran" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola →</Link>}
+        />
+        <Card className="mt-3">
+          <CardContent className="pt-4 space-y-3">
+            {budgets.slice(0, 3).map((b) => {
+              const cat = catMap.get(b.categoryId);
+              const spent = monthTx.filter((t) => t.type === "EXPENSE" && t.categoryId === b.categoryId).reduce((a, v) => a + v.amount, 0);
+              const pct = b.amount ? Math.min(100, Math.round((spent / b.amount) * 100)) : 0;
+              const over = spent > b.amount;
+              const near = !over && pct >= 80;
+              return (
+                <div key={b.id}>
+                  <div className="flex justify-between text-[12px] mb-1.5">
+                    <span className="font-semibold text-ink dark:text-[#e9e6e2]">{cat?.name}</span>
+                    <span className={`num ${over ? "text-[#b42318] dark:text-[#fca5a5]" : near ? "text-[#a16207] dark:text-[#fcd34d]" : "text-mute dark:text-[#8f8b85]"}`}>{pct}% · {formatRupiahCompact(spent)} / {formatRupiahCompact(b.amount)}</span>
+                  </div>
+                  <Progress value={pct} indicatorClassName={over ? "bg-[#b42318] dark:bg-[#fca5a5]" : near ? "bg-[#a16207] dark:bg-[#fcd34d]" : undefined} />
                 </div>
-                <Progress value={pct} indicatorClassName={over ? "bg-[#b42318] dark:bg-[#fca5a5]" : near ? "bg-[#a16207] dark:bg-[#fcd34d]" : undefined} />
-              </div>
-            );
-          })}
-          {budgets.length === 0 && <div className="text-[13px] text-mute dark:text-[#a7a39d]">Belum ada anggaran.</div>}
-          <Link href="/anggaran" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola anggaran →</Link>
-        </CardContent>
-      </Card>
+              );
+            })}
+            {budgets.length === 0 && <div className="text-[13px] text-mute dark:text-[#a7a39d]">Belum ada anggaran.</div>}
+            <Link href="/anggaran" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola anggaran →</Link>
+          </CardContent>
+        </Card>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-1.5">Tujuan</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {goals.slice(0, 2).map((g) => {
-            const pct = g.targetAmount ? Math.round((g.currentAmount / g.targetAmount) * 100) : 0;
-            const done = g.currentAmount >= g.targetAmount;
-            return (
-              <div key={g.id} className="rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-4">
-                <div className="text-[13px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2] flex items-center gap-1.5">{g.name} {done && <span className="text-[10px] font-medium bg-[#1a7a4a] dark:bg-[#4ade80]/80 text-white dark:text-[#141414] border hairline px-1.5 py-0.5 rounded-full">selesai</span>}</div>
-                <div className={`text-[12px] num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{formatRupiahCompact(g.currentAmount)} / {formatRupiahCompact(g.targetAmount)}</div>
-                <Progress value={pct} className="mt-3" indicatorClassName={done ? "bg-[#1a7a4a] dark:bg-[#4ade80]" : undefined} />
-                <div className={`text-[11px] font-medium mt-1.5 num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{pct}%</div>
-              </div>
-            );
-          })}
-          <Link href="/tujuan" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Lihat semua tujuan →</Link>
-        </CardContent>
-      </Card>
+      <div>
+        <SectionHead
+          kicker="Nabung"
+          title={
+            <>Tujuan, <HeroPill className="text-[15px] sm:text-[17px]">kekejar.</HeroPill></>
+          }
+          desc={goals.length > 0 ? `${goals.length} target aktif` : "Belum ada target"}
+          action={<Link href="/tujuan" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Lihat →</Link>}
+        />
+        <Card className="mt-3">
+          <CardContent className="pt-4 space-y-3">
+            {goals.slice(0, 2).map((g) => {
+              const pct = g.targetAmount ? Math.round((g.currentAmount / g.targetAmount) * 100) : 0;
+              const done = g.currentAmount >= g.targetAmount;
+              return (
+                <div key={g.id} className="rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-4">
+                  <div className="text-[13px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2] flex items-center gap-1.5">{g.name} {done && <span className="text-[10px] font-medium bg-[#1a7a4a] dark:bg-[#4ade80]/80 text-white dark:text-[#141414] border hairline px-1.5 py-0.5 rounded-full">selesai</span>}</div>
+                  <div className={`text-[12px] num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{formatRupiahCompact(g.currentAmount)} / {formatRupiahCompact(g.targetAmount)}</div>
+                  <Progress value={pct} className="mt-3" indicatorClassName={done ? "bg-[#1a7a4a] dark:bg-[#4ade80]" : undefined} />
+                  <div className={`text-[11px] font-medium mt-1.5 num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{pct}%</div>
+                </div>
+              );
+            })}
+            <Link href="/tujuan" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Lihat semua tujuan →</Link>
+          </CardContent>
+        </Card>
+      </div>
+
+      <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} fab />
     </div>
   );
 }

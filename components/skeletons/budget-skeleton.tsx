@@ -1,23 +1,29 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function BudgetSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <Skeleton className="h-[22px] w-[100px]" />
-          <Skeleton className="h-[13px] w-[180px]" />
-        </div>
-        <Skeleton className="h-9 w-[90px] rounded-full shrink-0" />
+      {/* hero editorial — tanpa pil eyebrow */}
+      <div className="space-y-2">
+        <Skeleton className="h-[38px] w-[220px]" />
+        <Skeleton className="h-[38px] w-[180px]" />
+        <Skeleton className="h-[14px] w-[240px]" />
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-4 flex gap-2">
-          <Skeleton className="h-9 w-[100px] rounded-[14px]" />
-          <Skeleton className="h-9 flex-1 rounded-[14px]" />
-        </CardContent>
-      </Card>
+      <Skeleton className="h-[40px] w-full rounded-full" />
+
+      {/* ringkasan 3 kolom */}
+      <div className="grid grid-cols-3 gap-3">
+        {[0, 1, 2].map((i) => (
+          <Card key={i} className="text-center">
+            <CardContent className="p-4 space-y-2">
+              <Skeleton className="h-[11px] w-[50px] mx-auto" />
+              <Skeleton className="h-[14px] w-[70px] mx-auto" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <div className="space-y-3">
         {[0, 1, 2, 3].map((i) => (
@@ -43,13 +49,14 @@ export function BudgetSkeleton() {
 export function GoalSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <Skeleton className="h-[22px] w-[80px]" />
-          <Skeleton className="h-[13px] w-[200px]" />
-        </div>
-        <Skeleton className="h-9 w-[90px] rounded-full shrink-0" />
+      {/* hero editorial — tanpa pil eyebrow */}
+      <div className="space-y-2">
+        <Skeleton className="h-[38px] w-[230px]" />
+        <Skeleton className="h-[38px] w-[190px]" />
+        <Skeleton className="h-[14px] w-[250px]" />
       </div>
+
+      <Skeleton className="h-[40px] w-full rounded-full" />
 
       <div className="grid gap-3">
         {[0, 1, 2].map((i) => (

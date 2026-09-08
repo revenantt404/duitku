@@ -4,27 +4,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function TransactionSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <Skeleton className="h-[22px] w-[110px]" />
-          <Skeleton className="h-[13px] w-[200px]" />
-        </div>
-        <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+      {/* hero editorial — tanpa pil eyebrow */}
+      <div className="space-y-2">
+        <Skeleton className="h-[38px] w-[250px]" />
+        <Skeleton className="h-[38px] w-[210px]" />
+        <Skeleton className="h-[14px] w-[280px]" />
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-4 grid gap-3">
-          <div className="flex gap-2">
-            <Skeleton className="h-9 flex-1 rounded-[14px]" />
-            <Skeleton className="h-9 w-[120px] rounded-[14px]" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-7 w-[60px] rounded-full" />
-            <Skeleton className="h-7 w-[70px] rounded-full" />
-            <Skeleton className="h-7 w-[65px] rounded-full" />
-          </div>
-        </CardContent>
-      </Card>
+      <Skeleton className="h-[40px] w-full rounded-full" />
+
+      <div className="flex gap-2">
+        <Skeleton className="h-10 flex-1 rounded-full" />
+        <Skeleton className="h-10 w-[110px] rounded-full" />
+      </div>
 
       {[0, 1].map((group) => (
         <Card key={group} className="shadow-sm">

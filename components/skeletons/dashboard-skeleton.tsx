@@ -4,29 +4,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function DashboardSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <Skeleton className="h-[22px] w-[120px]" />
-          <Skeleton className="h-[14px] w-[200px]" />
-        </div>
-        <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+      {/* hero editorial — tanpa pil eyebrow */}
+      <div className="space-y-2">
+        <Skeleton className="h-[38px] w-[240px]" />
+        <Skeleton className="h-[38px] w-[200px]" />
+        <Skeleton className="h-[14px] w-[280px]" />
       </div>
 
-      <Card className="rounded-[18px] overflow-hidden shadow-sm">
-        <CardContent className="p-6">
-          <Skeleton className="h-[11px] w-[90px]" />
-          <Skeleton className="mt-2 h-[30px] w-[180px]" />
-          <div className="mt-5 grid grid-cols-3 gap-4 border-t hairline pt-5">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className={i > 0 ? "border-l hairline pl-4 space-y-2" : "space-y-2"}>
-                <Skeleton className="h-[11px] w-[50px]" />
-                <Skeleton className="h-[14px] w-[80px]" />
-                <Skeleton className="h-[11px] w-[60px]" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <Skeleton className="h-[40px] w-full rounded-full" />
+
+      {/* panel saldo inverted */}
+      <div className="rounded-[18px] bg-ink dark:bg-[#e9e6e2] p-5">
+        <Skeleton className="h-[11px] w-[140px] opacity-60" />
+        <Skeleton className="mt-2 h-[32px] w-[200px] opacity-60" />
+        <Skeleton className="mt-3 h-12 w-full opacity-40" />
+        <div className="mt-3 grid grid-cols-3 gap-3 border-t border-white/15 dark:border-black/15 pt-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-[11px] w-[50px] opacity-60" />
+              <Skeleton className="h-[14px] w-[80px] opacity-60" />
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div>
         <div className="flex items-center justify-between mb-3">

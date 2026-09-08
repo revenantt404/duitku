@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TransactionForm } from "@/components/transaction-form";
+import { PageHero, HeroStamp, HeroRule, HeroLedger, SectionHead } from "@/components/page-hero";
+import { Ticker } from "@/components/ticker";
 import { useWallets, useCategories, useTransactions } from "@/lib/use-data";
-import { formatRupiah, formatDateShort, cn } from "@/lib/utils";
+import { formatRupiah, formatRupiahCompact, formatDateShort, cn } from "@/lib/utils";
 import { RupiahInput } from "@/components/ui/rupiah-input";
 import { DateInput } from "@/components/ui/date-input";
 import { useToast } from "@/components/ui/toast";
@@ -300,18 +302,50 @@ export default function TransaksiPage() {
   const isLoading = !txHook.hydrated || txHook.loading;
   const emptyAll = transactions.length === 0 && !isLoading;
 
+  const tickerItems = useMemo(() => {
+    const items = [
+      `${summary.count} hasil filter`,
+      `Masuk ${formatRupiahCompact(summary.income)}`,
+      `Keluar ${formatRupiahCompact(summary.expense)}`,
+    ];
+    if (filterMonth) items.push(`Periode ${filterMonth}`);
+    if (filterType !== "ALL") items.push(`Tipe ${filterType.toLowerCase()}`);
+    return items;
+  }, [summary, filterMonth, filterType]);
+
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Transaksi</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Filter per bulan · cari · hapus · edit 2-tap</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={handleExport} className="hidden sm:inline-flex"><Download className="h-3.5 w-3.5" strokeWidth={1.75} /> Ekspor</Button>
-          <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} />
-        </div>
-      </div>
+      <PageHero
+        title={
+          <>
+            <span className="flex flex-wrap items-center gap-3">
+              Semua tercatat, <HeroStamp>arsip</HeroStamp>
+            </span>
+            <br />
+            <span className="mt-2 inline-flex flex-wrap items-center gap-x-2.5 gap-y-2">
+              <HeroRule>gampang dicari.</HeroRule>
+              <HeroLedger />
+            </span>
+          </>
+        }
+        desc={
+          <>
+            Masuk <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(summary.income)}</strong> · keluar{" "}
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(summary.expense)}</strong> dari{" "}
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{summary.count} transaksi</strong> hasil filter.
+          </>
+        }
+        actions={
+          <>
+            <TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} />
+            <Button variant="outline" size="sm" onClick={handleExport} className="h-11 px-5 sm:h-9">
+              <Download className="h-3.5 w-3.5" strokeWidth={1.75} /> Ekspor CSV
+            </Button>
+          </>
+        }
+      />
+
+      <Ticker items={tickerItems} />
 
       <Card className="overflow-hidden">
         <CardContent className="p-4 space-y-3 min-w-0">
@@ -519,77 +553,85 @@ export default function TransaksiPage() {
         <Card className="text-center"><CardContent className="p-3 sm:p-4"><div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Keluar</div><div className="text-[13px] font-semibold mt-1 num truncate text-[#b42318] dark:text-[#fca5a5]" title={formatRupiah(summary.expense)}>{summary.expense >= 1000000 ? `Rp ${(summary.expense/1000000).toFixed(1)} jt` : formatRupiah(summary.expense)}</div></CardContent></Card>
       </div>
 
-      <Card className="overflow-visible">
-        <CardHeader className="pb-3"><CardTitle>Daftar</CardTitle></CardHeader>
-        <CardContent className="pt-0">
-          {isLoading ? (
-            <div className="py-10 text-center text-[13px] text-mute dark:text-[#a7a39d]">Memuat…</div>
-          ) : emptyAll ? (
-            <div className="rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-5">
-              <div className="kicker">Mulai 3 langkah</div>
-              <div className="text-[13px] font-semibold mt-1 text-ink dark:text-[#e9e6e2]">Belum ada transaksi — setup dulu biar seamless</div>
-              <div className="mt-4 grid gap-2 text-[13px]">
-                <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">1.</span> Buat dompet · BCA/Cash/GoPay</span><span className="h-6 w-6 rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center text-[11px]">→</span></div>
-                <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">2.</span> Kategori ada default — tambah custom kalau perlu</span><Link href="/kategori" className="text-[11px] font-medium underline underline-offset-4">Atur kategori</Link></div>
-                <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">3.</span> Tambah transaksi pertama</span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} triggerLabel="Coba" /></div>
-              </div>
-              <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-3">Setelah ini input cuma <span className="font-medium text-ink dark:text-[#e9e6e2]">&lt;10 detik</span> — nominal → kategori chip → simpan. Edit & duplikat 2-tap kalau salah.</div>
-            </div>
-          ) : grouped.length > 0 ? (
-            <div className="space-y-0">
-              {grouped.map((group) => (
-                <div key={group.label}>
-                  <div className="sticky top-0 z-[2] -mx-[18px] md:-mx-6 flex items-center justify-between border-y hairline bg-white dark:bg-[#1d1d1d] px-[18px] md:px-6 py-2">
-                    <span className="kicker">{group.label}</span>
-                    <span className="text-[11px] tabular-nums text-mute dark:text-[#8f8b85]">{group.items.length} transaksi</span>
-                  </div>
-                  <div className="space-y-2 py-3">
-                    {group.items.map((t) => {
-                      const cat = t.categoryId ? catMap.get(t.categoryId) : null;
-                      const w = walletMap.get(t.walletId);
-                      const toW = t.toWalletId ? walletMap.get(t.toWalletId) : null;
-                      const isIncome = t.type === "INCOME";
-                      const isExpense = t.type === "EXPENSE";
-                      const title = t.type === "TRANSFER" ? `Transfer ${w?.name} → ${toW?.name}` : cat?.name || t.description || "Tanpa kategori";
-                      return (
-                        <div key={t.id} className="flex items-center justify-between rounded-[14px] border hairline bg-white dark:bg-[#1d1d1d] px-3.5 py-3 gap-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2]" : "bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#a7a39d]"}`}>
-                              {isIncome ? <ArrowUpCircle className="h-4 w-4" strokeWidth={2} /> : isExpense ? <ArrowDownCircle className="h-4 w-4" strokeWidth={2} /> : <ArrowLeftRight className="h-4 w-4" strokeWidth={2} />}
-                            </div>
-                            <div className="min-w-0">
-                              <div className="text-[13px] font-semibold leading-tight tracking-tight truncate text-ink dark:text-[#e9e6e2]">
-                                {highlight(title, q)}
-                                <span className="ml-1.5 hidden sm:inline"><Badge variant="secondary" className="text-[10px]">{t.type}</Badge></span>
-                              </div>
-                              <div className="text-[12px] text-mute dark:text-[#8f8b85] truncate">{t.description ? highlight(t.description, q) : "—"} · {w?.name}{toW ? ` → ${toW.name}` : ""} · {formatDateShort(t.date)}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <div className={`hidden sm:block text-[13px] font-semibold num mr-1 ${isIncome ? "text-[#1a7a4a] dark:text-[#4ade80]" : isExpense ? "text-[#b42318] dark:text-[#fca5a5]" : "text-mute dark:text-[#a7a39d]"}`}>
-                              {isIncome ? "+" : isExpense ? "−" : ""}{formatRupiah(t.amount)}
-                            </div>
-                            <Button variant="ghost" size="icon" onClick={() => setEditTx(t)} className="h-8 w-8" aria-label="Edit"><Pencil className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDuplicate(t.id)} className="h-8 w-8" aria-label="Duplikat"><Copy className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => requestDelete(t.id)} className="h-8 w-8" aria-label="Hapus"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+      <div>
+        <SectionHead
+          kicker="Arsip"
+          title={
+            <>Daftar, <span className="italic">urut & saring.</span></>
+          }
+          desc={`${summary.count} transaksi · ${formatRupiahCompact(summary.income)} masuk · ${formatRupiahCompact(summary.expense)} keluar`}
+        />
+        <Card className="overflow-visible mt-3">
+          <CardContent className="pt-4">
+            {isLoading ? (
+              <div className="py-10 text-center text-[13px] text-mute dark:text-[#a7a39d]">Memuat…</div>
+            ) : emptyAll ? (
+              <div className="rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-5">
+                <div className="kicker">Mulai 3 langkah</div>
+                <div className="text-[13px] font-semibold mt-1 text-ink dark:text-[#e9e6e2]">Belum ada transaksi — setup dulu biar seamless</div>
+                <div className="mt-4 grid gap-2 text-[13px]">
+                  <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">1.</span> Buat dompet · BCA/Cash/GoPay</span><span className="h-6 w-6 rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center text-[11px]">→</span></div>
+                  <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">2.</span> Kategori ada default — tambah custom kalau perlu</span><Link href="/kategori" className="text-[11px] font-medium underline underline-offset-4">Atur kategori</Link></div>
+                  <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">3.</span> Tambah transaksi pertama</span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} triggerLabel="Coba" /></div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-10 text-center">
-              <div className="mx-auto h-10 w-10 rounded-xl bg-[#f3f1ec] dark:bg-[#1d1d1d] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div>
-              <div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Tidak ada transaksi untuk filter ini</div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={clearFilters}>Bersihkan filter</Button>
-            </div>
-          )}
-          {txHook.error && <div className="mt-3 text-[12px] text-[#b42318] dark:text-[#fca5a5]">{txHook.error}</div>}
-        </CardContent>
-      </Card>
+                <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-3">Setelah ini input cuma <span className="font-medium text-ink dark:text-[#e9e6e2]">&lt;10 detik</span> — nominal → kategori chip → simpan. Edit & duplikat 2-tap kalau salah.</div>
+              </div>
+            ) : grouped.length > 0 ? (
+              <div className="space-y-0">
+                {grouped.map((group) => (
+                  <div key={group.label}>
+                    <div className="sticky top-0 z-[2] -mx-[18px] md:-mx-6 flex items-center justify-between border-y hairline bg-white dark:bg-[#1d1d1d] px-[18px] md:px-6 py-2">
+                      <span className="kicker">{group.label}</span>
+                      <span className="text-[11px] tabular-nums text-mute dark:text-[#8f8b85]">{group.items.length} transaksi</span>
+                    </div>
+                    <div className="space-y-2 py-3">
+                      {group.items.map((t) => {
+                        const cat = t.categoryId ? catMap.get(t.categoryId) : null;
+                        const w = walletMap.get(t.walletId);
+                        const toW = t.toWalletId ? walletMap.get(t.toWalletId) : null;
+                        const isIncome = t.type === "INCOME";
+                        const isExpense = t.type === "EXPENSE";
+                        const title = t.type === "TRANSFER" ? `Transfer ${w?.name} → ${toW?.name}` : cat?.name || t.description || "Tanpa kategori";
+                        return (
+                          <div key={t.id} className="flex items-center justify-between rounded-[14px] border hairline bg-white dark:bg-[#1d1d1d] px-3.5 py-3 gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2]" : "bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#a7a39d]"}`}>
+                                {isIncome ? <ArrowUpCircle className="h-4 w-4" strokeWidth={2} /> : isExpense ? <ArrowDownCircle className="h-4 w-4" strokeWidth={2} /> : <ArrowLeftRight className="h-4 w-4" strokeWidth={2} />}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-[13px] font-semibold leading-tight tracking-tight truncate text-ink dark:text-[#e9e6e2]">
+                                  {highlight(title, q)}
+                                  <span className="ml-1.5 hidden sm:inline"><Badge variant="secondary" className="text-[10px]">{t.type}</Badge></span>
+                                </div>
+                                <div className="text-[12px] text-mute dark:text-[#8f8b85] truncate">{t.description ? highlight(t.description, q) : "—"} · {w?.name}{toW ? ` → ${toW.name}` : ""} · {formatDateShort(t.date)}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <div className={`hidden sm:block text-[13px] font-semibold num mr-1 ${isIncome ? "text-[#1a7a4a] dark:text-[#4ade80]" : isExpense ? "text-[#b42318] dark:text-[#fca5a5]" : "text-mute dark:text-[#a7a39d]"}`}>
+                                {isIncome ? "+" : isExpense ? "−" : ""}{formatRupiah(t.amount)}
+                              </div>
+                              <Button variant="ghost" size="icon" onClick={() => setEditTx(t)} className="h-8 w-8" aria-label="Edit"><Pencil className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDuplicate(t.id)} className="h-8 w-8" aria-label="Duplikat"><Copy className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => requestDelete(t.id)} className="h-8 w-8" aria-label="Hapus"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-10 text-center">
+                <div className="mx-auto h-10 w-10 rounded-xl bg-[#f3f1ec] dark:bg-[#1d1d1d] grid place-items-center text-mute dark:text-[#8f8b85] border hairline">—</div>
+                <div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Tidak ada transaksi untuk filter ini</div>
+                <Button variant="outline" size="sm" className="mt-3" onClick={clearFilters}>Bersihkan filter</Button>
+              </div>
+            )}
+            {txHook.error && <div className="mt-3 text-[12px] text-[#b42318] dark:text-[#fca5a5]">{txHook.error}</div>}
+          </CardContent>
+        </Card>
+      </div>
 
       <Dialog open={!!confirmId} onOpenChange={(o) => { if (!o) setConfirmId(null); }}>
         <DialogContent onClose={() => setConfirmId(null)} className="max-w-[380px]">

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PageHero, HeroChip, HeroCircle, HeroDots, SectionHead } from "@/components/page-hero";
+import { Ticker } from "@/components/ticker";
 import { useCategories, useTransactions, useBudgets } from "@/lib/use-data";
 import { useToast } from "@/components/ui/toast";
 import { Plus, Trash2, Pencil, Tag, Briefcase, Utensils, Car, ShoppingBag, Receipt, Film, Heart, Laptop, Wallet, Landmark, Smartphone, TrendingUp, Package } from "lucide-react";
@@ -145,17 +147,48 @@ export default function KategoriPage() {
 
   const isLoading = !catsHook.hydrated || catsHook.loading;
 
+  const inc = categories.filter((c) => c.type === "INCOME");
+  const exp = categories.filter((c) => c.type === "EXPENSE");
+
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Kategori</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Atur kategori pemasukan & pengeluaran</p>
-        </div>
-        <Button size="sm" onClick={() => openCreate()}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah</Button>
-      </div>
+      <PageHero
+        title={
+          <>
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              Kasih nama, <HeroDots />
+            </span>
+            <span className="mt-2 flex flex-wrap items-center gap-1.5">
+              <HeroChip>biar</HeroChip>
+              <HeroCircle>ke baca.</HeroCircle>
+            </span>
+          </>
+        }
+        desc={
+          <>
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{categories.length} kategori</strong> ·{" "}
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{exp.length} keluar</strong> ·{" "}
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{inc.length} masuk</strong>. Pill transaksi ikut warna kategori.
+          </>
+        }
+        actions={<Button onClick={() => openCreate()}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah kategori</Button>}
+      />
 
-      <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline">
+      <Ticker items={[
+        `${categories.length} kategori`,
+        `${exp.length} keluar`,
+        `${inc.length} masuk`,
+        ...filtered.slice(0, 4).map((c) => c.name),
+      ]} />
+
+      <div>
+        <SectionHead
+          kicker="Saring"
+          title={
+            <>Lihat yang <span className="italic">perlu.</span></>
+          }
+        />
+        <div className="mt-3 inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline">
         {[
           { v: "ALL", label: "Semua" },
           { v: "EXPENSE", label: "Keluar" },
@@ -180,8 +213,14 @@ export default function KategoriPage() {
         <div className="space-y-6">
           {(filterType === "ALL" || filterType === "EXPENSE") && grouped.exp.length > 0 && (
             <div>
-              <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase mb-2">Pengeluaran · {grouped.exp.length}</div>
-              <div className="grid gap-2">
+              <SectionHead
+                kicker="Keluar"
+                title={
+                  <>Pergi ke <HeroChip>mana.</HeroChip></>
+                }
+                desc={`${grouped.exp.length} kategori`}
+              />
+              <div className="mt-2.5 grid gap-2">
                 {grouped.exp.map((c) => {
                   const readOnly = c.isSystem && !catsHook.isDemo;
                   return (
@@ -214,8 +253,14 @@ export default function KategoriPage() {
           )}
           {(filterType === "ALL" || filterType === "INCOME") && grouped.inc.length > 0 && (
             <div>
-              <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase mb-2">Pemasukan · {grouped.inc.length}</div>
-              <div className="grid gap-2">
+              <SectionHead
+                kicker="Masuk"
+                title={
+                  <>Datang dari <span className="italic">mana.</span></>
+                }
+                desc={`${grouped.inc.length} kategori`}
+              />
+              <div className="mt-2.5 grid gap-2">
                 {grouped.inc.map((c) => {
                   const readOnly = c.isSystem && !catsHook.isDemo;
                   return (
@@ -248,6 +293,7 @@ export default function KategoriPage() {
           )}
         </div>
       )}
+      </div>
 
       {catsHook.error && <div className="text-[12px] text-[#b42318] dark:text-[#fca5a5]">{catsHook.error}</div>}
 

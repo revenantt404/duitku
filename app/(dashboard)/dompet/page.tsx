@@ -8,8 +8,10 @@ import { Select, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { WalletCard } from "@/components/wallet-card";
 import { RupiahInput } from "@/components/ui/rupiah-input";
+import { PageHero, HeroOutline, HeroStack, SectionHead } from "@/components/page-hero";
+import { Ticker } from "@/components/ticker";
 import { useWallets, useTransactions } from "@/lib/use-data";
-import { formatRupiah } from "@/lib/utils";
+import { formatRupiah, formatRupiahCompact } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { Plus, Trash2, Pencil, Wallet } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -112,41 +114,69 @@ export default function DompetPage() {
 
   const isLoading = !walletsHook.hydrated || walletsHook.loading;
 
+  const tickerItems = useMemo(() => {
+    const items = [`${wallets.length} dompet`, `Total ${formatRupiahCompact(total)}`];
+    for (const { wallet, balance } of balances.slice(0, 4)) items.push(`${wallet.name} ${formatRupiahCompact(balance)}`);
+    return items;
+  }, [wallets.length, total, balances]);
+
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Dompet</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">Multi-dompet · saldo dipisah · transfer tidak merusak laporan</p>
-        </div>
-        <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah</Button>
+      <PageHero
+        title={
+          <>
+            Satu tempat, semua
+            <br />
+            <span className="mt-2 inline-flex flex-wrap items-center gap-x-2.5 gap-y-2">
+              <HeroOutline>dompet.</HeroOutline>
+              <HeroStack />
+            </span>
+          </>
+        }
+        desc={
+          <>
+            Total <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{isLoading ? "—" : formatRupiah(total)}</strong> di{" "}
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{wallets.length} dompet</strong> — Cash, Bank, eWallet, Investasi.
+          </>
+        }
+        actions={<Button onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah dompet</Button>}
+      />
+
+      <Ticker items={tickerItems} />
+
+      {/* panel total — inverted ink ala landing */}
+      <div className="relative overflow-hidden rounded-[18px] bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] p-5 panel-shadow">
+        <div className="relative text-[11px] font-medium tracking-[0.12em] uppercase opacity-70">Total Saldo Semua Dompet</div>
+        <div className="relative mt-1 text-[28px] sm:text-[32px] font-semibold tracking-tight leading-none num">{isLoading ? "—" : formatRupiah(total)}</div>
+        <div className="relative mt-2 text-[13px] opacity-70 num">{wallets.length} dompet · Cash + Bank + eWallet + Investasi</div>
+        {walletsHook.error && <div className="relative mt-2 text-[12px] opacity-80">{walletsHook.error}</div>}
       </div>
 
-      <Card className="rounded-[18px]">
-        <CardContent className="p-6">
-          <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Total Saldo Semua Dompet</div>
-          <div className="mt-1 text-[28px] font-semibold tracking-tight leading-none num text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiah(total)}</div>
-          <div className="text-[13px] text-mute dark:text-[#a7a39d] mt-2 num">{wallets.length} dompet · Cash + Bank + eWallet + Investasi</div>
-          {walletsHook.error && <div className="mt-2 text-[12px] text-[#b42318] dark:text-[#fca5a5]">{walletsHook.error}</div>}
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-2 gap-3">
-        {balances.map(({ wallet, balance }) => (
-          <div key={wallet.id} className="relative">
-            <WalletCard wallet={wallet as any} balance={balance} negative={balance < 0} />
-            <div className="absolute top-2 right-2 flex gap-1">
-              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => openEdit(wallet.id)} aria-label="Edit dompet"><Pencil className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
-              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => requestDelete(wallet.id)} aria-label="Hapus dompet"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+      <div>
+        <SectionHead
+          kicker="Dompet"
+          title={
+            <>Pilih, <span className="italic">atur saldonya.</span></>
+          }
+          desc={`${wallets.length} dompet aktif`}
+        />
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          {balances.map(({ wallet, balance }) => (
+            <div key={wallet.id} className="relative">
+              <WalletCard wallet={wallet as any} balance={balance} negative={balance < 0} />
+              <div className="absolute top-2 right-2 flex gap-1">
+                <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => openEdit(wallet.id)} aria-label="Edit dompet"><Pencil className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+                <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => requestDelete(wallet.id)} aria-label="Hapus dompet"><Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
+              </div>
+              <div className="text-[11px] text-mute dark:text-[#8f8b85] mt-2 px-1 num">awal {formatRupiah(wallet.initialBalance)} · {TYPE_LABEL[wallet.type] || wallet.type}</div>
             </div>
-            <div className="text-[11px] text-mute dark:text-[#8f8b85] mt-2 px-1 num">awal {formatRupiah(wallet.initialBalance)} · {TYPE_LABEL[wallet.type] || wallet.type}</div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
       {wallets.length === 0 && !isLoading && (
         <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline"><Wallet className="h-5 w-5" strokeWidth={1.75} /></div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Belum ada dompet</div><div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Tambah minimal 1 untuk mulai — Cash, BCA, GoPay, dll.</div><Button size="sm" className="mt-4" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah dompet</Button></CardContent></Card>
       )}
+      </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent onClose={() => setOpen(false)} className="max-w-[420px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">

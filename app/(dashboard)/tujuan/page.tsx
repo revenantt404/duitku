@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,10 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RupiahInput } from "@/components/ui/rupiah-input";
 import { DateInput } from "@/components/ui/date-input";
+import { PageHero, HeroRise, HeroSteps, SectionHead } from "@/components/page-hero";
+import { Ticker } from "@/components/ticker";
 import { useGoals } from "@/lib/use-data";
-import { formatRupiahCompact, formatDateShort, formatRupiah } from "@/lib/utils";
+import { formatRupiahCompact, formatDateShort } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { Plus, Trash2, Pencil, Target, Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -117,75 +119,107 @@ export default function TujuanPage() {
   const totalCurrent = goals.reduce((a, g) => a + g.currentAmount, 0);
   const isLoading = !goalsHook.hydrated || goalsHook.loading;
 
+  const doneCount = useMemo(() => goals.filter((g) => g.currentAmount >= g.targetAmount).length, [goals]);
+  const tickerItems = useMemo(() => [
+    `${goals.length} tujuan`,
+    `Terkumpul ${formatRupiahCompact(totalCurrent)}`,
+    `Target ${formatRupiahCompact(totalTarget)}`,
+    ...goals.slice(0, 3).map((g) => g.name),
+  ], [goals, totalCurrent, totalTarget]);
+
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-[22px] font-[500] tracking-tight text-ink dark:text-[#e9e6e2]">Tujuan</h1>
-          <p className="text-[13px] text-mute dark:text-[#a7a39d] mt-0.5">{isLoading ? "Memuat…" : `${goals.length} tujuan · `}<span className="num">{formatRupiahCompact(totalCurrent)} / {formatRupiahCompact(totalTarget)}</span></p>
-        </div>
-        <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah</Button>
-      </div>
+      <PageHero
+        title={
+          <>
+            <HeroRise words={["Mimpi", "besar,"]} />
+            <br />
+            <span className="mt-2 inline-flex flex-wrap items-end gap-x-2.5 gap-y-2">
+              <span className="border-b-[5px] border-ink pb-0.5 font-[500] italic leading-none dark:border-[#e9e6e2]">
+                dicicil kecil.
+              </span>
+              <HeroSteps />
+            </span>
+          </>
+        }
+        desc={
+          <>
+            Terkumpul <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(totalCurrent)}</strong> dari{" "}
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(totalTarget)}</strong>. Pecah 12jt jadi 1jt/bulan.
+          </>
+        }
+        actions={<Button onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah tujuan</Button>}
+      />
 
-      <div className="grid gap-3">
-        {isLoading ? (
-          <Card className="border hairline"><CardContent className="p-10 text-center text-[13px] text-mute">Memuat…</CardContent></Card>
-        ) : goals.map((g) => {
-          const pct = g.targetAmount ? Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100)) : 0;
-          const done = g.currentAmount >= g.targetAmount;
-          const sisa = Math.max(0, g.targetAmount - g.currentAmount);
-          const daysLeft = g.deadline ? Math.ceil((new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
-          return (
-            <Card key={g.id} className={done ? "border-ink dark:border-[#e9e6e2] bg-[#f3f1ec] dark:bg-[#1d1d1d]" : "card-hover"}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-9 w-9 rounded-xl grid place-items-center shrink-0 bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border hairline">
-                      <Target className="h-4 w-4" strokeWidth={1.75} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[13px] font-semibold leading-tight tracking-tight flex items-center gap-1.5 text-ink dark:text-[#e9e6e2]">
-                        <span className="truncate">{g.name}</span> {done && <span className="text-[11px] font-medium bg-[#1a7a4a] dark:bg-[#4ade80]/80 text-white dark:text-[#141414] border hairline px-2 py-0.5 rounded-full shrink-0">selesai</span>}
+      <Ticker items={tickerItems} />
+
+      <div>
+        <SectionHead
+          kicker="Target"
+          title={
+            <>Satu-satu, <span className="italic">kekejar.</span></>
+          }
+          desc={`${goals.length} tujuan · ${formatRupiahCompact(totalCurrent)} / ${formatRupiahCompact(totalTarget)}`}
+        />
+        <div className="mt-3 grid gap-3">
+          {isLoading ? (
+            <Card className="border hairline"><CardContent className="p-10 text-center text-[13px] text-mute">Memuat…</CardContent></Card>
+          ) : goals.map((g) => {
+            const pct = g.targetAmount ? Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100)) : 0;
+            const done = g.currentAmount >= g.targetAmount;
+            const sisa = Math.max(0, g.targetAmount - g.currentAmount);
+            const daysLeft = g.deadline ? Math.ceil((new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+            return (
+              <Card key={g.id} className={done ? "border-ink dark:border-[#e9e6e2] bg-[#f3f1ec] dark:bg-[#1d1d1d]" : "card-hover"}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 rounded-xl grid place-items-center shrink-0 bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border hairline">
+                        <Target className="h-4 w-4" strokeWidth={1.75} />
                       </div>
-                      <div className={`text-[12px] num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{formatRupiahCompact(g.currentAmount)} / {formatRupiahCompact(g.targetAmount)} · {pct}%</div>
+                      <div className="min-w-0">
+                        <div className="text-[13px] font-semibold leading-tight tracking-tight flex items-center gap-1.5 text-ink dark:text-[#e9e6e2]">
+                          <span className="truncate">{g.name}</span> {done && <span className="text-[11px] font-medium bg-[#1a7a4a] dark:bg-[#4ade80]/80 text-white dark:text-[#141414] border hairline px-2 py-0.5 rounded-full shrink-0">selesai</span>}
+                        </div>
+                        <div className={`text-[12px] num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{formatRupiahCompact(g.currentAmount)} / {formatRupiahCompact(g.targetAmount)} · {pct}%</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(g.id)}><Pencil className="h-4 w-4" strokeWidth={1.75} /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => requestDelete(g.id)}><Trash2 className="h-4 w-4" strokeWidth={1.75} /></Button>
                     </div>
                   </div>
-                  <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(g.id)}><Pencil className="h-4 w-4" strokeWidth={1.75} /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => requestDelete(g.id)}><Trash2 className="h-4 w-4" strokeWidth={1.75} /></Button>
+
+                  <Progress value={pct} className="mt-4" indicatorClassName={done ? "bg-[#1a7a4a] dark:bg-[#4ade80]" : undefined} />
+
+                  <div className="mt-2 flex items-center justify-between text-[12px] gap-2">
+                    <span className={`font-medium num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{done ? "Tercapai" : `Sisa ${formatRupiahCompact(sisa)}`}</span>
+                    {g.deadline && <span className="text-mute dark:text-[#8f8b85] flex items-center gap-1 shrink-0"><Calendar className="h-3.5 w-3.5" strokeWidth={1.75} /> {formatDateShort(g.deadline)}</span>}
                   </div>
-                </div>
 
-                <Progress value={pct} className="mt-4" indicatorClassName={done ? "bg-[#1a7a4a] dark:bg-[#4ade80]" : undefined} />
-
-                <div className="mt-2 flex items-center justify-between text-[12px] gap-2">
-                  <span className={`font-medium num ${done ? "text-[#1a7a4a] dark:text-[#4ade80]" : "text-mute dark:text-[#8f8b85]"}`}>{done ? "Tercapai" : `Sisa ${formatRupiahCompact(sisa)}`}</span>
-                  {g.deadline && <span className="text-mute dark:text-[#8f8b85] flex items-center gap-1 shrink-0"><Calendar className="h-3.5 w-3.5" strokeWidth={1.75} /> {formatDateShort(g.deadline)}</span>}
-                </div>
-
-                {!done && (
-                  <div className="mt-3 flex gap-2">
-                    <div className="flex-1" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTopup(g.id); } }}>
-                      <RupiahInput
-                        value={topupById[g.id] ? parseInt(topupById[g.id], 10) : undefined}
-                        onValueChange={(v) => setTopupById((prev) => ({ ...prev, [g.id]: String(v || "") }))}
-                        placeholder="0"
-                        className="h-9 text-[13px] num"
-                      />
+                  {!done && (
+                    <div className="mt-3 flex gap-2">
+                      <div className="flex-1" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTopup(g.id); } }}>
+                        <RupiahInput
+                          value={topupById[g.id] ? parseInt(topupById[g.id], 10) : undefined}
+                          onValueChange={(v) => setTopupById((prev) => ({ ...prev, [g.id]: String(v || "") }))}
+                          placeholder="0"
+                          className="h-9 text-[13px] num"
+                        />
+                      </div>
+                      <Button size="sm" className="h-9 shrink-0" onClick={() => handleTopup(g.id)}>
+                        <Plus className="h-4 w-4" strokeWidth={1.75} /> Nabung
+                      </Button>
                     </div>
-                    <Button size="sm" className="h-9 shrink-0" onClick={() => handleTopup(g.id)}>
-                      <Plus className="h-4 w-4" strokeWidth={1.75} /> Nabung
-                    </Button>
-                  </div>
-                )}
+                  )}
 
-                {g.deadline && !done && daysLeft !== null && (
-                  <div className="mt-2 text-[12px] text-mute dark:text-[#8f8b85]">
-                    {daysLeft < 0 ? `Terlewat ${Math.abs(daysLeft)} hari` : daysLeft === 0 ? "Hari ini deadline" : `${daysLeft} hari lagi`} · {formatDateShort(g.deadline)}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  {g.deadline && !done && daysLeft !== null && (
+                    <div className="mt-2 text-[12px] text-mute dark:text-[#8f8b85]">
+                      {daysLeft < 0 ? `Terlewat ${Math.abs(daysLeft)} hari` : daysLeft === 0 ? "Hari ini deadline" : `${daysLeft} hari lagi`} · {formatDateShort(g.deadline)}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
           );
         })}
       </div>
@@ -194,13 +228,15 @@ export default function TujuanPage() {
         <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline"><Target className="h-5 w-5" strokeWidth={1.75} /></div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-1">Belum ada tujuan</div><div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Bikin target nabung biar ada alasan buka DuitKu</div><Button size="sm" className="mt-4" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah tujuan</Button></CardContent></Card>
       )}
       {goalsHook.error && <div className="text-[12px] text-[#b42318] dark:text-[#fca5a5]">{goalsHook.error}</div>}
+      </div>
 
-      <Card className="bg-[#f3f1ec] dark:bg-[#1d1d1d] border hairline">
-        <CardContent className="p-5">
-          <div className="text-[13px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2]">Tips</div>
-          <div className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d] mt-1">Pecah tujuan besar jadi kecil. 12jt → 1jt/bulan. Tombol Nabung nambah <code className="bg-white dark:bg-[#141414] border hairline rounded px-1.5 py-0.5 num">currentAmount</code> per card.</div>
-        </CardContent>
-      </Card>
+      <figure className="rounded-[18px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-5">
+        <div className="kicker">Tips</div>
+        <blockquote className="mt-2.5 font-display text-[16px] leading-snug tracking-tight italic">
+          “Pecah 12jt jadi 1jt/bulan — yang kecil kekejar.”
+        </blockquote>
+        <figcaption className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d] mt-1.5">Tombol Nabung nambah <code className="bg-white dark:bg-[#141414] border hairline rounded px-1.5 py-0.5 num">currentAmount</code> per card.</figcaption>
+      </figure>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent onClose={() => setOpen(false)} className="max-w-[420px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
