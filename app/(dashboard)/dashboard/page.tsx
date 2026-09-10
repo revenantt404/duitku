@@ -402,7 +402,7 @@ export default function DashboardPage() {
                         return (
                           <div key={t.id} className={`flex items-center justify-between rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] px-3.5 py-3 gap-3 content-in stagger-${Math.min(ti, 5) + 1}`}>
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]"}`}>
+                              <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-white dark:bg-[#1d1d1d] text-[#1a7a4a] dark:text-[#4ade80]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-[#b42318] dark:text-[#fca5a5]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]"}`}>
                                 {isIncome ? <ArrowUpCircle className="h-4 w-4" strokeWidth={2} /> : isExpense ? <ArrowDownCircle className="h-4 w-4" strokeWidth={2} /> : <ArrowLeftRight className="h-4 w-4" strokeWidth={2} />}
                               </div>
                               <div className="min-w-0">
