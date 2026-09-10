@@ -1,34 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { categorySchema } from "@/lib/validations";
-import { ensureUserAndGetId } from "@/lib/ensure-user";
+import { requireUserId, apiError } from "@/lib/server-auth";
+import { DB_TIMEOUT_MS, withTimeout } from "@/lib/server-timeout";
 
 async function getUserId(): Promise<string | null> {
-  const supabase = await createClient();
-  // Timeout: auth lambat jangan gantung API. DB error → throw (500), bukan 401.
-  const got: any = await Promise.race([
-    supabase.auth.getUser(),
-    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
-  ]);
-  if (got === null) throw new Error("Sesi Supabase lambat — coba muat ulang");
-  const { data: { user }, error } = got;
-  if (error || !user || !user.email) return null;
-  return await ensureUserAndGetId(user as any);
+  // requireUserId: env DB dicek (<100ms), auth max 4 dtk, ensureUser max 3 dtk.
+  // DB error → throw → 503 (bukan 401 yang menyesatkan).
+  return await requireUserId();
 }
 
 export async function GET() {
   try {
     const userId = await getUserId();
     if (!userId) return NextResponse.json({ error: "Unauthorized — silakan login ulang" }, { status: 401 });
-    const cats = await prisma.category.findMany({
-      where: { OR: [{ userId }, { isSystem: true }] },
-      orderBy: [{ isSystem: "desc" }, { name: "asc" }],
-    });
+    const cats = await withTimeout(
+      prisma.category.findMany({
+        where: { OR: [{ userId }, { isSystem: true }] },
+        orderBy: [{ isSystem: "desc" }, { name: "asc" }],
+      }),
+      DB_TIMEOUT_MS,
+      "Memuat kategori"
+    );
     return NextResponse.json(cats);
   } catch (e: any) {
-    console.error("[categories GET] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "categories GET");
   }
 }
 
@@ -64,8 +60,7 @@ export async function POST(req: NextRequest) {
       throw e;
     }
   } catch (e: any) {
-    console.error("[categories POST] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "categories POST");
   }
 }
 
@@ -106,8 +101,7 @@ export async function PATCH(req: NextRequest) {
       throw e;
     }
   } catch (e: any) {
-    console.error("[categories PATCH] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "categories PATCH");
   }
 }
 
@@ -130,10 +124,9 @@ export async function DELETE(req: NextRequest) {
     await prisma.category.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    console.error("[categories DELETE] failed:", e);
     if (e?.code === "P2025") return NextResponse.json({ error: "Not found" }, { status: 404 });
     // P2003 = FK restrict (mis. Budget masih refer)
     if (e?.code === "P2003") return NextResponse.json({ error: "Kategori masih dipakai (FK) — hapus anggaran/transaksi dulu" }, { status: 409 });
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "categories DELETE");
   }
 }

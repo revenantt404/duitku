@@ -9,13 +9,15 @@ function makeQueryClient() {
         staleTime: 30_000,
         gcTime: 5 * 60_000,
         // Jangan retry 401/403/404: itu sesi mati / bukan-milik — retry cuma
-        // memperpanjang skeleton tanpa hasil. Error jaringan/5xx tetap retry 1x.
+        // memperpanjang skeleton tanpa hasil. 503/timeout (cold start, DB sibuk)
+        // tetap retry 1x dengan backoff — server kini fail-fast ≤10 dtk jadi
+        // retry tidak menumpuk melebihi timeout client 12 dtk.
         retry: (failureCount, error: any) => {
           const msg = String(error?.message || "");
           if (/401|403|404|Unauthorized|silakan login ulang/i.test(msg)) return false;
           return failureCount < 1;
         },
-        retryDelay: 800,
+        retryDelay: (attemptIndex) => Math.min(800 * (attemptIndex + 1), 2_000),
         refetchOnWindowFocus: true,
         refetchOnMount: false,
       },

@@ -8,12 +8,41 @@ type FetchOpts = RequestInit & { rawQuery?: string; timeoutMs?: number };
 
 export const API_TIMEOUT_MS = 12_000;
 
+// Server kini fail-fast: auth ≤4 dtk, tiap tahap DB ≤3 dtk (worst-case GET ~10 dtk).
+// Timeout client tetap 12 dtk sebagai guard terakhir; backoff di bawah menangani
+// 503 transien (cold start / pooler sibuk) tanpa membanjiri server.
+const MAX_RETRIES = 1;
+const RETRY_BASE_DELAY_MS = 800;
+
 function isTimeoutError(e: unknown): boolean {
   return e instanceof DOMException && e.name === "TimeoutError";
 }
 
-async function req<T>(path: string, opts: FetchOpts = {}): Promise<T> {
-  const { timeoutMs = API_TIMEOUT_MS, rawQuery: _rawQuery, ...init } = opts;
+function isRetryable(e: unknown): boolean {
+  if (e instanceof Error) {
+    if (e.name === "AbortError" || e.name === "TimeoutError") return true;
+    if (/503|timeout|lambat|koneksi database|fetch failed|network/i.test(e.message)) return true;
+  }
+  return e instanceof TypeError; // network failure
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Pesan 503/timeout server → ringkas agar watchdog/panel error enak dibaca.
+function prettifyServerError(msg: string): string {
+  if (/timeout/i.test(msg)) {
+    return "Server sibuk/lambat — coba lagi sebentar (cek koneksi database di Vercel bila berulang).";
+  }
+  if (/belum dikonfigurasi/i.test(msg)) {
+    return "Konfigurasi database server belum lengkap — hubungi admin (DATABASE_URL/DIRECT_URL).";
+  }
+  return msg;
+}
+
+async function fetchOnce<T>(path: string, opts: FetchOpts, timeoutMs: number): Promise<T> {
+  const { rawQuery: _rawQuery, ...init } = opts;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   let res: Response;
@@ -44,9 +73,32 @@ async function req<T>(path: string, opts: FetchOpts = {}): Promise<T> {
       (json && (json.error?.message || json.error || json.message)) ||
       text ||
       `Request failed ${res.status}`;
-    throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
+    const raw = typeof msg === "string" ? msg : JSON.stringify(msg);
+    throw new Error(res.status === 503 ? prettifyServerError(raw) : raw);
   }
   return json as T;
+}
+
+async function req<T>(path: string, opts: FetchOpts = {}): Promise<T> {
+  const { timeoutMs = API_TIMEOUT_MS } = opts;
+  // Retry 1x khusus GET idempoten: aman, menolong saat cold start Vercel.
+  // POST/PATCH/DELETE tidak di-retry (tidak idempoten).
+  const method = String((opts as RequestInit).method || "GET").toUpperCase();
+  const retries = method === "GET" ? MAX_RETRIES : 0;
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fetchOnce<T>(path, opts, timeoutMs);
+    } catch (e) {
+      lastErr = e;
+      if (attempt < retries && isRetryable(e)) {
+        await sleep(RETRY_BASE_DELAY_MS * (attempt + 1));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastErr;
 }
 
 // Normalisasi BigInt-string → number (IDR aman < 9e15, masih safe dalam Number)

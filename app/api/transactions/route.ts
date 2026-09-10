@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { transactionSchema } from "@/lib/validations";
-import { ensureUserAndGetId } from "@/lib/ensure-user";
+import { requireUserId, apiError } from "@/lib/server-auth";
+import { DB_TIMEOUT_MS, withTimeout } from "@/lib/server-timeout";
 
 async function getUserIdOr401(): Promise<string | null> {
-  const supabase = await createClient();
-  // Timeout: auth lambat jangan gantung API. DB error → throw (500), bukan 401.
-  const got: any = await Promise.race([
-    supabase.auth.getUser(),
-    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
-  ]);
-  if (got === null) throw new Error("Sesi Supabase lambat — coba muat ulang");
-  const { data: { user }, error } = got;
-  if (error || !user || !user.email) return null;
-  return await ensureUserAndGetId(user as any);
+  // requireUserId: env DB dicek (<100ms), auth max 4 dtk, ensureUser max 3 dtk.
+  // DB error → throw → 503 (bukan 401 yang menyesatkan).
+  return await requireUserId();
 }
 
 // GET /api/transactions?month=2026-08&type=EXPENSE&q=ayam
@@ -46,12 +39,16 @@ export async function GET(req: NextRequest) {
       where.date = { gte: start, lt: end };
     }
 
-    const data = await prisma.transaction.findMany({
-      where,
-      include: { category: true, wallet: true },
-      orderBy: { date: "desc" },
-      take: 200,
-    });
+    const data = await withTimeout(
+      prisma.transaction.findMany({
+        where,
+        include: { category: true, wallet: true },
+        orderBy: { date: "desc" },
+        take: 200,
+      }),
+      DB_TIMEOUT_MS,
+      "Memuat transaksi"
+    );
     return NextResponse.json(
       data.map((t) => ({
         ...t,
@@ -63,8 +60,7 @@ export async function GET(req: NextRequest) {
       }))
     );
   } catch (e: any) {
-    console.error("[transactions GET] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "transactions GET");
   }
 }
 
@@ -149,8 +145,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ ...tx, amount: tx.amount.toString() }, { status: 201 });
   } catch (e: any) {
-    console.error("[transactions POST] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "transactions POST");
   }
 }
 
@@ -176,7 +171,6 @@ export async function DELETE(req: NextRequest) {
     }
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    console.error("[transactions DELETE] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "transactions DELETE");
   }
 }

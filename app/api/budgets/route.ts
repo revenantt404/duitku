@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { budgetSchema } from "@/lib/validations";
-import { ensureUserAndGetId } from "@/lib/ensure-user";
+import { requireUserId, apiError } from "@/lib/server-auth";
+import { DB_TIMEOUT_MS, withTimeout } from "@/lib/server-timeout";
 
 async function getUserId(): Promise<string | null> {
-  const supabase = await createClient();
-  // Timeout: auth lambat jangan gantung API. DB error → throw (500), bukan 401.
-  const got: any = await Promise.race([
-    supabase.auth.getUser(),
-    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
-  ]);
-  if (got === null) throw new Error("Sesi Supabase lambat — coba muat ulang");
-  const { data: { user }, error } = got;
-  if (error || !user || !user.email) return null;
-  return await ensureUserAndGetId(user as any);
+  // requireUserId: env DB dicek (<100ms), auth max 4 dtk, ensureUser max 3 dtk.
+  // DB error → throw → 503 (bukan 401 yang menyesatkan).
+  return await requireUserId();
 }
 
 export async function GET(req: NextRequest) {
@@ -34,11 +27,14 @@ export async function GET(req: NextRequest) {
       if (!Number.isFinite(y) || y < 2000 || y > 2100) return NextResponse.json({ error: "year tidak valid" }, { status: 400 });
       where.year = y;
     }
-    const data = await prisma.budget.findMany({ where, include: { category: true }, orderBy: { categoryId: "asc" } });
+    const data = await withTimeout(
+      prisma.budget.findMany({ where, include: { category: true }, orderBy: { categoryId: "asc" } }),
+      DB_TIMEOUT_MS,
+      "Memuat anggaran"
+    );
     return NextResponse.json(data.map((b) => ({ ...b, amount: b.amount.toString() })));
   } catch (e: any) {
-    console.error("[budgets GET] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "budgets GET");
   }
 }
 
@@ -86,8 +82,7 @@ export async function POST(req: NextRequest) {
       throw e;
     }
   } catch (e: any) {
-    console.error("[budgets POST] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "budgets POST");
   }
 }
 
@@ -115,8 +110,7 @@ export async function PATCH(req: NextRequest) {
     const updated = await prisma.budget.update({ where: { id: String(id) }, data: { amount: amountBig } });
     return NextResponse.json({ ...updated, amount: updated.amount.toString() });
   } catch (e: any) {
-    console.error("[budgets PATCH] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "budgets PATCH");
   }
 }
 
@@ -131,8 +125,7 @@ export async function DELETE(req: NextRequest) {
     await prisma.budget.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    console.error("[budgets DELETE] failed:", e);
     if (e?.code === "P2025") return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "budgets DELETE");
   }
 }

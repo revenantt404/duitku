@@ -1,34 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { walletSchema } from "@/lib/validations";
-import { ensureUserAndGetId } from "@/lib/ensure-user";
+import { requireUserId, apiError } from "@/lib/server-auth";
+import { DB_TIMEOUT_MS, withTimeout } from "@/lib/server-timeout";
 
 async function getUserIdOr401(): Promise<string | null> {
-  const supabase = await createClient();
-  // Timeout: auth lambat (cold start) jangan gantung API selamanya.
-  const got: any = await Promise.race([
-    supabase.auth.getUser(),
-    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
-  ]);
-  if (got === null) throw new Error("Sesi Supabase lambat — coba muat ulang");
-  const { data: { user }, error } = got;
-  if (error || !user) return null;
-  if (!user.email) return null;
-  // Jangan telan DB error jadi 401 — biarkan throw → 500 biar ketahuan
-  // (sebelumnya ensureUser gagal me-return null = "Unauthorized" yang menyesatkan).
-  return await ensureUserAndGetId(user as any);
+  // requireUserId: env DB dicek (<100ms), auth max 4 dtk, ensureUser max 3 dtk.
+  // DB error → throw → 503 (bukan 401 yang menyesatkan).
+  return await requireUserId();
 }
 
 export async function GET() {
   try {
     const userId = await getUserIdOr401();
     if (!userId) return NextResponse.json({ error: "Unauthorized — silakan login ulang" }, { status: 401 });
-    const wallets = await prisma.wallet.findMany({ where: { userId }, orderBy: { createdAt: "asc" } });
+    const wallets = await withTimeout(
+      prisma.wallet.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
+      DB_TIMEOUT_MS,
+      "Memuat dompet"
+    );
     return NextResponse.json(wallets.map((w) => ({ ...w, initialBalance: w.initialBalance.toString() })));
   } catch (e: any) {
-    console.error("[wallets GET] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "wallets GET");
   }
 }
 
@@ -64,10 +57,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ ...w, initialBalance: w.initialBalance.toString() }, { status: 201 });
   } catch (e: any) {
-    console.error("[wallets POST] failed:", e);
-    const msg = e?.message || String(e);
-    // jangan bocorkan prisma internals berlebihan, tapi cukup untuk debug lokal
-    return NextResponse.json({ error: msg, code: e?.code }, { status: 500 });
+    return apiError(e, "wallets POST");
   }
 }
 
@@ -108,7 +98,6 @@ export async function DELETE(req: NextRequest) {
     await prisma.wallet.delete({ where: { id } });
     return NextResponse.json({ ok: true, purged: trashedCount });
   } catch (e: any) {
-    console.error("[wallets DELETE] failed:", e);
     if (e?.code === "P2025") return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (e?.code === "P2003") {
       // harusnya udah ke-handle trashed di atas, kalau masih P2003 berarti ada transaksi aktif yang kelewat
@@ -118,7 +107,7 @@ export async function DELETE(req: NextRequest) {
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "wallets DELETE");
   }
 }
 
@@ -161,7 +150,6 @@ export async function PATCH(req: NextRequest) {
       throw e;
     }
   } catch (e: any) {
-    console.error("[wallets PATCH] failed:", e);
-    return NextResponse.json({ error: e?.message || String(e), code: e?.code }, { status: 500 });
+    return apiError(e, "wallets PATCH");
   }
 }
