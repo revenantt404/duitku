@@ -17,7 +17,6 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
-  Star,
   Target,
   TrendingUp,
   Wallet,
@@ -27,19 +26,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const ticker = [
-  "Multi-dompet rapi",
-  "Budget bulanan",
+  "Dompet kepisah rapi",
+  "Limit budget bulanan",
   "Grafik jujur",
-  "Export CSV",
-  "Login Google",
+  "Ekspor CSV",
+  "Masuk pakai Google",
   "Tanpa iklan",
-  "IDR BigInt akurat",
+  "Hitungan rupiah pas",
 ];
 
 const stats = [
-  { icon: Zap, label: "Kecepatan", value: "< 10 dtk", desc: "1 transaksi tercatat", chip: "sat-set" },
+  { icon: Zap, label: "Kecepatan", value: "< 10 dtk", desc: "sekali catat, langsung beres", chip: "sat-set" },
   { icon: Wallet, label: "Dompet", value: "3+ dompet", desc: "Cash / Bank / eWallet", chip: "rapi" },
-  { icon: ShieldCheck, label: "Keamanan", value: "100% milikmu", desc: "BigInt + RLS per user", chip: "terjaga" },
+  { icon: ShieldCheck, label: "Keamanan", value: "100% milikmu", desc: "Data kamu, terkunci per akun", chip: "terjaga" },
 ];
 
 const wallets = [
@@ -49,18 +48,18 @@ const wallets = [
 ];
 
 const features = [
-  { num: "01", icon: Wallet, title: "Multi-dompet rapi", desc: "Cash, BCA, GoPay, investasi dipisah. Transfer tidak merusak laporan." },
-  { num: "02", icon: PieChart, title: "Grafik jujur", desc: "Donut per kategori + bar 6 bulan. Warm, langsung keliatan borosnya." },
-  { num: "03", icon: Target, title: "Budget & goals", desc: "Limit makan 1,5jt/bulan. Nabung iPhone progress 40%." },
-  { num: "04", icon: ShieldCheck, title: "Data aman", desc: "BigInt Rupiah, soft-delete, RLS per user. Minus boleh, tapi keliatan." },
-  { num: "05", icon: Smartphone, title: "Input 10 detik", desc: "FAB → nominal → kategori → dompet → simpan. Tanpa distraksi." },
-  { num: "06", icon: TrendingUp, title: "Gratis di Vercel", desc: "Next.js + Supabase + Prisma. Deploy ke duitku.vercel.app." },
+  { num: "01", icon: Wallet, title: "Dompet kepisah rapi", desc: "Cash, BCA, GoPay, investasi kepisah. Mindahin duit nggak ngerusak laporan." },
+  { num: "02", icon: PieChart, title: "Grafik jujur", desc: "Donut per kategori + bar 6 bulan. Langsung kelihatan borosnya di mana." },
+  { num: "03", icon: Target, title: "Budget & goals", desc: "Misal limit makan 1,5 jt/bulan. Nabung iPhone udah jalan 40%." },
+  { num: "04", icon: ShieldCheck, title: "Data aman", desc: "Hitungan rupiah presisi, data terkunci per akun. Saldo minus tetap kelihatan, nggak disembunyiin." },
+  { num: "05", icon: Smartphone, title: "Input 10 detik", desc: "Nominal, kategori, dompet, simpan. Beres tanpa distraksi." },
+  { num: "06", icon: TrendingUp, title: "Gratis dipakai", desc: "Nggak ada paywall. Buka duitku.vercel.app, login, langsung catat." },
 ];
 
 const steps = [
-  { icon: LogIn, n: "1", title: "Login 30 detik", desc: "Pakai Google, langsung masuk. Tanpa kartu kredit." },
-  { icon: Zap, n: "2", title: "Catat 10 detik", desc: "Nominal → kategori → dompet → simpan. Sat-set." },
-  { icon: PieChart, n: "3", title: "Lihat grafik jujur", desc: "Donut + bar 6 bulan nunjukin ke mana duit pergi." },
+  { icon: LogIn, n: "1", title: "Masuk 30 detik", desc: "Pakai Google, langsung masuk. Nggak ditanya kartu kredit." },
+  { icon: Zap, n: "2", title: "Catat 10 detik", desc: "Isi nominal, pilih kategori sama dompet, simpan. Beres." },
+  { icon: PieChart, n: "3", title: "Lihat grafik jujur", desc: "Donut + bar 6 bulan nunjukin duit kamu lari ke mana." },
 ];
 
 export default function LandingPage() {
@@ -94,7 +93,7 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-1 rounded-full bg-ink dark:bg-[#e9e6e2] px-2 py-0.5 text-[11px] font-semibold text-paper dark:text-[#141414]">
               <Sparkles className="h-3 w-3" strokeWidth={2} /> Baru
             </span>
-            <span className="text-mute dark:text-[#a7a39d]">Import CSV + budget pintar</span>
+            <span className="text-mute dark:text-[#a7a39d]">Bisa import CSV + pasang limit budget</span>
             <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:-translate-y-px group-hover:translate-x-px" strokeWidth={1.75} />
           </button>
 
@@ -127,16 +126,15 @@ export default function LandingPage() {
           </h1>
 
           <p className="animate-hero-rise mt-5 text-[15px] leading-[1.75] text-mute dark:text-[#a7a39d] max-w-[48ch]" style={{ animationDelay: "220ms" }}>
-            DuitKu bikin <strong className="font-semibold text-ink dark:text-[#e9e6e2]">10 detik per transaksi</strong> terasa
-            enteng. <strong className="font-semibold text-ink dark:text-[#e9e6e2]">Multi-dompet</strong>, budgeting,
-            dan <strong className="font-semibold text-ink dark:text-[#e9e6e2]">grafik jujur</strong> — warm paper,
-            tegas, tanpa distraksi.
+            DuitKu bikin <strong className="font-semibold text-ink dark:text-[#e9e6e2]">nyatet 10 detik per transaksi</strong> berasa
+            enteng. <strong className="font-semibold text-ink dark:text-[#e9e6e2]">Dompet kepisah rapi</strong>, ada budgeting,
+            dan <strong className="font-semibold text-ink dark:text-[#e9e6e2]">grafiknya jujur</strong> — nggak ada yang ganggu.
           </p>
 
           {/* CTA */}
           <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
             <Button onClick={() => setLoginOpen(true)} className="group h-12 px-7 text-[15px] w-full sm:w-auto">
-              Mulai — Gratis
+              Mulai gratis
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" strokeWidth={1.75} />
             </Button>
             <a href="#demo">
@@ -144,44 +142,22 @@ export default function LandingPage() {
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-ink text-paper dark:bg-[#e9e6e2] dark:text-[#141414]">
                   <Play className="h-3 w-3 fill-current" />
                 </span>
-                Lihat demo 1 menit
+                Intip contohnya
               </Button>
             </a>
           </div>
           <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-mute dark:text-[#8f8b85]">
-            {["Gratis selamanya", "Tanpa kartu kredit", "Login Google 30 detik"].map((t) => (
+            {["Gratis beneran", "Nggak minta kartu kredit", "Login Google 30 detik"].map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5" strokeWidth={2.25} /> {t}
               </span>
             ))}
           </div>
 
-          {/* social proof */}
-          <div className="mt-6 flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {[
-                { t: "NA", c: "bg-ink text-paper dark:bg-[#e9e6e2] dark:text-[#141414]" },
-                { t: "BP", c: "bg-white dark:bg-[#1d1d1d] border hairline" },
-                { t: "DR", c: "bg-[#f3f1ec] dark:bg-[#2a2a2a]" },
-                { t: "+", c: "bg-ink text-paper dark:bg-[#e9e6e2] dark:text-[#141414]" },
-              ].map((a, i) => (
-                <span
-                  key={i}
-                  className={`grid h-8 w-8 place-items-center rounded-full text-[10px] font-bold ring-2 ring-paper dark:ring-[#141414] ${a.c}`}
-                >
-                  {a.t}
-                </span>
-              ))}
-            </div>
-            <div>
-              <div className="flex items-center gap-0.5 text-ink dark:text-[#e9e6e2]" aria-label="rating 4.9 dari 5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-current" strokeWidth={0} />
-                ))}
-                <span className="ml-1.5 text-[12px] font-semibold num">4.9/5</span>
-              </div>
-              <div className="text-[12px] text-mute dark:text-[#8f8b85]">dari 2.400+ perencana keuangan kos</div>
-            </div>
+          {/* kenapa ada — jujur, tanpa angka palsu */}
+          <div className="mt-6 flex items-center gap-2.5 text-[12px] leading-relaxed text-mute dark:text-[#8f8b85]">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-ink text-paper dark:bg-[#e9e6e2] dark:text-[#141414] text-[10px] font-bold">Rp</span>
+            <p>Dibuat karena duit tiap akhir bulan selalu bocor — dipakai & dirawat tiap minggu.</p>
           </div>
 
           {/* stats bento */}
@@ -243,7 +219,7 @@ export default function LandingPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ink dark:bg-[#e9e6e2] opacity-50" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-ink dark:bg-[#e9e6e2]" />
                 </span>
-                live preview
+                contoh tampilan
               </span>
             </div>
 
@@ -283,7 +259,7 @@ export default function LandingPage() {
                   <Plus className="h-4 w-4" strokeWidth={2.25} />
                 </span>
                 <span className="flex-1 truncate text-[12px] text-mute dark:text-[#8f8b85]">
-                  Ketik nominal… <span className="num font-semibold text-ink dark:text-[#e9e6e2]">Rp 35.000</span>
+                  Tulis nominal… <span className="num font-semibold text-ink dark:text-[#e9e6e2]">Rp 35.000</span>
                 </span>
                 <span className="hidden sm:inline rounded-full bg-[#f3f1ec] dark:bg-[#2a2a2a] border hairline px-2.5 py-1 text-[11px] font-medium">Makan</span>
                 <span className="rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] px-3.5 py-1.5 text-[12px] font-semibold shrink-0">Catat</span>
@@ -320,7 +296,7 @@ export default function LandingPage() {
                     <div className="text-[12px] font-semibold text-ink dark:text-[#e9e6e2]">Insight jujur</div>
                     <span className="text-[11px] font-medium underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Lihat</span>
                   </div>
-                  <div className="text-[12px] text-mute dark:text-[#a7a39d]">Pengeluaran makan naik 32% vs bulan lalu. Gas rem dulu?</div>
+                  <div className="text-[12px] text-mute dark:text-[#a7a39d]">Jajan makan naik 32% dibanding bulan lalu. Rem dikit?</div>
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                     <div className="h-full w-[68%] rounded-full bg-ink dark:bg-[#e9e6e2]" />
                   </div>
@@ -335,8 +311,8 @@ export default function LandingPage() {
               TERCATAT ✓
             </div>
             <div className="flex items-center justify-between pt-3 text-[11px] text-mute dark:text-[#8f8b85]">
-              <span>● Live preview — data contoh, bukan data asli</span>
-              <span className="num">diperbarui 2 mnt lalu</span>
+              <span>● Contoh tampilan — bukan data asli</span>
+              <span className="num">update 2 mnt lalu</span>
             </div>
           </div>
         </section>
@@ -350,7 +326,7 @@ export default function LandingPage() {
             Kecil, tapi <span className="italic">nendang.</span>
           </h2>
           <p className="mt-2 text-[14px] leading-relaxed text-mute dark:text-[#a7a39d] max-w-[52ch]">
-            Semua yang kamu butuhkan buat beresin uang — tanpa fitur numpang lewat yang bikin berat.
+            Seperlunya aja buat beresin uang — nggak ada fitur numpang yang bikin berat.
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -390,21 +366,16 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* quote */}
+          {/* quote — dari yang bikin, beneran */}
           <figure className="mt-6 rounded-[18px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-5 sm:p-6">
-            <div className="flex items-center gap-0.5 text-ink dark:text-[#e9e6e2]" aria-label="rating 5 dari 5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="h-3.5 w-3.5 fill-current" strokeWidth={0} />
-              ))}
-            </div>
-            <blockquote className="mt-3 font-display text-[17px] sm:text-[19px] leading-snug tracking-tight italic">
-              “Akhirnya tau ke mana gaji pergi. Ternyata selama ini kalah sama kopi susu.”
+            <blockquote className="mt-0 font-display text-[17px] sm:text-[19px] leading-snug tracking-tight italic">
+              “Gue bikin ini pas sadar duit gue larinya ke kopi susu melulu.”
             </blockquote>
             <figcaption className="mt-3 flex items-center gap-2.5">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-ink text-paper dark:bg-[#e9e6e2] dark:text-[#141414] text-[10px] font-bold">DN</span>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-ink text-paper dark:bg-[#e9e6e2] dark:text-[#141414] text-[10px] font-bold">KF</span>
               <span>
-                <span className="block text-[13px] font-semibold leading-none">Dinda N.</span>
-                <span className="block text-[12px] text-mute dark:text-[#8f8b85] mt-1">Anak kos · pakai DuitKu 4 bulan</span>
+                <span className="block text-[13px] font-semibold leading-none">Kevin F.</span>
+                <span className="block text-[12px] text-mute dark:text-[#8f8b85] mt-1">yang bikin · pakai tiap hari</span>
               </span>
             </figcaption>
           </figure>
@@ -415,10 +386,10 @@ export default function LandingPage() {
             <div className="relative flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
               <div>
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-white/20 dark:border-black/20 px-2.5 py-0.5 text-[11px] font-medium opacity-80">
-                  <Zap className="h-3 w-3" strokeWidth={2} /> Mulai dalam 30 detik
+                  <Zap className="h-3 w-3" strokeWidth={2} /> Cuma 30 detik buat mulai
                 </div>
                 <div className="mt-2.5 font-display text-[22px] sm:text-[24px] font-[500] tracking-tight">Siap catat duit hari ini?</div>
-                <div className="text-[13px] opacity-70 mt-1">30 detik login Google. Tanpa kartu kredit.</div>
+                <div className="text-[13px] opacity-70 mt-1">Login Google 30 detik. Nggak minta kartu kredit.</div>
               </div>
               <div className="w-full sm:w-auto shrink-0">
                 <Button onClick={() => setLoginOpen(true)} variant="outline" className="group w-full sm:w-auto h-12 px-6 bg-paper dark:bg-[#141414] text-ink dark:text-[#e9e6e2] border hairline hover:bg-white dark:hover:bg-[#1d1d1d]">
@@ -429,7 +400,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="text-center text-[11px] text-mute dark:text-[#8f8b85] mt-8">© {new Date().getFullYear()} DuitKu — Next.js 14 · Tailwind · Supabase · warm paper</div>
+          <div className="text-center text-[11px] text-mute dark:text-[#8f8b85] mt-8">© {new Date().getFullYear()} DuitKu</div>
         </section>
       </main>
     </div>

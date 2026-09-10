@@ -19,12 +19,12 @@ export default function UpdatePasswordPage() {
   async function handle(e: React.FormEvent) {
     e.preventDefault();
     if (pw.length < 6) { setMsg("Password minimal 6 karakter."); return; }
-    if (pw !== pw2) { setMsg("Konfirmasi password tidak cocok."); return; }
+    if (pw !== pw2) { setMsg("Password sama konfirmasinya nggak cocok."); return; }
     setLoading(true); setMsg(null);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: pw });
     if (error) setMsg(error.message);
-    else { setMsg("Password diperbarui. Mengalihkan ke dashboard…"); setTimeout(() => router.push("/dashboard"), 900); }
+    else { setMsg("Password udah ganti. Bentar, lagi dibukain dashboard…"); setTimeout(() => router.push("/dashboard"), 900); }
     setLoading(false);
   }
 
@@ -38,7 +38,7 @@ export default function UpdatePasswordPage() {
           <CardHeader className="text-center pb-3 pt-6">
             <div className="mx-auto h-10 w-10 rounded-xl bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center border hairline"><KeyRound className="h-5 w-5" strokeWidth={1.75} /></div>
             <CardTitle className="font-display text-[18px] mt-3">Password baru</CardTitle>
-            <CardDescription>Link dari email sudah valid — set password baru di sini.</CardDescription>
+            <CardDescription>Link dari email udah oke — bikin password baru di sini.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pb-6">
             <form onSubmit={handle} className="space-y-3">

@@ -143,9 +143,9 @@ export default function DashboardPage() {
         description: data.description || null,
         date: data.date ? new Date(data.date) : new Date(),
       } as any);
-      toast("Transaksi disimpan");
+      toast("Transaksi kesimpan");
     } catch (e: any) {
-      toast(e?.message || "Gagal menyimpan");
+      toast(e?.message || "Gagal nyimpen");
     }
   }
 
@@ -247,14 +247,13 @@ export default function DashboardPage() {
           <>
             Total saldo <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiah(totalSaldo)}</strong>{" "}
             · masuk <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(incomeMonth)}</strong>, keluar{" "}
-            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(expenseMonth)}</strong>. Warm paper,
-            tegas, tanpa distraksi.
+            <strong className="font-semibold text-ink dark:text-[#e9e6e2] num">{formatRupiahCompact(expenseMonth)}</strong>. Nggak ada yang ganggu.
           </>
         }
         meta={[
           `${wallets.length} dompet aktif`,
           `${monthTx.length} transaksi bulan ini`,
-          sisaMonth < 0 ? "Bulan ini minus" : "Arus aman",
+          sisaMonth < 0 ? "Bulan ini tekor" : "Bulan ini aman",
         ].map((t) => (
           <span key={t} className="inline-flex items-center gap-1.5">
             <Check className="h-3.5 w-3.5" strokeWidth={2.25} /> {t}
@@ -268,17 +267,17 @@ export default function DashboardPage() {
         <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] overflow-hidden">
           <CardContent className="p-5">
             <div className="kicker">Mulai 3 langkah</div>
-            <div className="text-[14px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2] mt-1">Setup dulu biar transaksi &lt;10 detik</div>
-            <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-0.5">Progress {onboardingStep.done}/3 · selesaiin biar dashboard hidup</div>
+            <div className="text-[14px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2] mt-1">Beresin dulu biar nyatet &lt;10 detik</div>
+            <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-0.5">Udah {onboardingStep.done}/3 · beresin biar dashboard-nya hidup</div>
             <div className="mt-4 grid gap-2">
               <Link href="/dompet" className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
                 <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s1 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]"}`}>{onboardingStep.s1 ? "✓" : "1"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Buat dompet</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">BCA / Cash / GoPay</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
               </Link>
               <Link href="/kategori" className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
-                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s2 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s2 ? "✓" : "2"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Cek kategori</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Makan, Transport… tambah custom</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
+                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s2 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s2 ? "✓" : "2"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Cek kategori</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Makan, Transport… tambah sendiri kalau kurang</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
               </Link>
               <div className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3">
-                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s3 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s3 ? "✓" : "3"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Catat transaksi pertama</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Nominal → kategori → simpan</span></span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} triggerLabel="Coba" />
+                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s3 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s3 ? "✓" : "3"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Catat transaksi pertama</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Nominal, kategori, simpan — beres</span></span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} triggerLabel="Coba" />
               </div>
             </div>
           </CardContent>
@@ -333,7 +332,7 @@ export default function DashboardPage() {
           <div>
             <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Kategori</div>
             <div className="text-[13px] font-medium text-ink dark:text-[#e9e6e2] mt-0.5">{categories.length} kategori · {categories.filter((c) => c.type === "EXPENSE").length} keluar · {categories.filter((c) => c.type === "INCOME").length} masuk</div>
-            <div className="text-[11px] text-mute dark:text-[#8f8b85]">Atur warna & icon biar pill transaksi cakep</div>
+            <div className="text-[11px] text-mute dark:text-[#8f8b85]">Atur warna & ikon biar transaksi gampang dibaca</div>
           </div>
           <Link href="/kategori"><Button size="sm" variant="outline">Kelola →</Button></Link>
         </CardContent>
@@ -374,7 +373,7 @@ export default function DashboardPage() {
           title={
             <>Arus kas, <HeroItalic>apa adanya.</HeroItalic></>
           }
-          desc="5 terakhir · group per tanggal"
+          desc="5 terakhir · dikelompokin per tanggal"
           action={<Link href="/transaksi"><Button variant="outline" size="sm">Lihat semua</Button></Link>}
         />
         <Card className="overflow-visible mt-3">
@@ -431,9 +430,9 @@ export default function DashboardPage() {
             {insight.up ? <TrendingUp className="h-4 w-4" strokeWidth={1.75} /> : <TrendingDown className="h-4 w-4" strokeWidth={1.75} />} Insight jujur
           </div>
           <blockquote className="mt-2.5 font-display text-[17px] leading-snug tracking-tight italic">
-            {insight.up ? `Pengeluaran naik ${insight.pct}% vs bulan lalu.` : `Pengeluaran turun ${Math.abs(Number(insight.pct))}% vs bulan lalu.`}
+            {insight.up ? `Pengeluaran naik ${insight.pct}% dibanding bulan lalu.` : `Pengeluaran turun ${Math.abs(Number(insight.pct))}% dibanding bulan lalu.`}
           </blockquote>
-          <figcaption className="text-[12px] text-mute dark:text-[#8f8b85] mt-1.5 num">Lalu {formatRupiahCompact(insight.prev)} → Kini {formatRupiahCompact(insight.cur)}</figcaption>
+          <figcaption className="text-[12px] text-mute dark:text-[#8f8b85] mt-1.5 num">Bulan lalu {formatRupiahCompact(insight.prev)} → sekarang {formatRupiahCompact(insight.cur)}</figcaption>
         </figure>
       )}
 
@@ -441,9 +440,9 @@ export default function DashboardPage() {
         <SectionHead
           kicker="Limit bulanan"
           title={
-            <>Anggaran, <span className="italic">terjaga.</span></>
+            <>Anggaran, <span className="italic">aman.</span></>
           }
-          desc={`${budgets.length} kategori dilimit`}
+          desc={`${budgets.length} kategori dipasang limit`}
           action={<Link href="/anggaran" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola →</Link>}
         />
         <Card className="mt-3">
@@ -464,7 +463,7 @@ export default function DashboardPage() {
                 </div>
               );
             })}
-            {budgets.length === 0 && <div className="text-[13px] text-mute dark:text-[#a7a39d]">Belum ada anggaran.</div>}
+            {budgets.length === 0 && <div className="text-[13px] text-mute dark:text-[#a7a39d]">Belum pasang limit.</div>}
             <Link href="/anggaran" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola anggaran →</Link>
           </CardContent>
         </Card>

@@ -23,13 +23,13 @@ export const metadata: Metadata = {
     default: "DuitKu — Catat Duit, Jelas Hidup",
     template: "%s · DuitKu",
   },
-  description: "Website manajemen uang: catat pemasukan & pengeluaran, multi-dompet, budgeting, dan tujuan tabungan. Dibuat dengan Next.js + Supabase.",
+  description: "Catat pemasukan dan pengeluaran, pisahin dompet, pasang limit budget, dan kejar target nabung.",
   keywords: ["duitku", "manajemen uang", "keuangan", "budget", "nextjs", "dompet", "anggaran"],
   authors: [{ name: "DuitKu" }],
   creator: "DuitKu",
   openGraph: {
     title: "DuitKu — Catat Duit, Jelas Hidup",
-    description: "Catat pemasukan & pengeluaran biar jelas. Multi-dompet, budgeting, grafik.",
+    description: "Catat pemasukan dan pengeluaran biar jelas. Dompet kepisah, ada limit budget, grafiknya jujur.",
     type: "website",
     locale: "id_ID",
     siteName: "DuitKu",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "DuitKu — Catat Duit, Jelas Hidup",
-    description: "Catat pemasukan & pengeluaran biar jelas. Multi-dompet, budgeting, grafik.",
+    description: "Catat pemasukan dan pengeluaran biar jelas. Dompet kepisah, ada limit budget, grafiknya jujur.",
   },
   icons: {
     icon: "/icon",

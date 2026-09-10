@@ -35,7 +35,7 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
 
   async function handleGoogle() {
     if (isPlaceholder) {
-      setMsg("Login Google belum aktif. Hubungi admin atau coba masuk dengan email & password di bawah.");
+      setMsg("Login Google lagi mati. Coba masuk pakai email & password di bawah, atau hubungi admin.");
       return;
     }
     setLoading(true);
@@ -89,7 +89,7 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
       router.push("/dashboard");
       return;
     }
-    if (!email || !password) { setMsg("Isi email & password buat daftar."); return; }
+    if (!email || !password) { setMsg("Isi email sama password dulu buat daftar."); return; }
     setLoading(true);
     setMsg(null);
     const supabase = createClient();
@@ -99,7 +99,7 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) setMsg(error.message);
-    else setMsg("Akun dibuat. Cek email buat verifikasi, atau langsung login kalau verifikasi dimatikan di Supabase.");
+    else setMsg("Akun udah dibuat. Cek email buat verifikasi, atau langsung login aja.");
     setLoading(false);
   }
 

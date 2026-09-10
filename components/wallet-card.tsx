@@ -12,8 +12,8 @@ export function WalletCard({ wallet, balance, negative, className }: { wallet: {
           <div className="text-[11px] tracking-wide text-mute dark:text-[#8f8b85]">{wallet.type}</div>
         </div>
         <div className={`mt-3 text-[18px] font-semibold tracking-tight leading-none num ${state === "bad" ? "text-[#b42318] dark:text-[#fca5a5]" : state === "warn" ? "text-[#a16207] dark:text-[#fcd34d]" : "text-[#1a7a4a] dark:text-[#4ade80]"}`}>{formatRupiah(balance)}</div>
-        {state === "bad" && <div className="mt-1 inline-flex items-center rounded-full border hairline bg-white dark:bg-[#1d1d1d] px-2 py-0.5 text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">Saldo minus · rugi</div>}
-        {state === "warn" && <div className="mt-1 inline-flex items-center rounded-full border hairline bg-white dark:bg-[#1d1d1d] px-2 py-0.5 text-[11px] font-medium text-[#a16207] dark:text-[#fcd34d]">Tipis</div>}
+        {state === "bad" && <div className="mt-1 inline-flex items-center rounded-full border hairline bg-white dark:bg-[#1d1d1d] px-2 py-0.5 text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">Saldo minus</div>}
+        {state === "warn" && <div className="mt-1 inline-flex items-center rounded-full border hairline bg-white dark:bg-[#1d1d1d] px-2 py-0.5 text-[11px] font-medium text-[#a16207] dark:text-[#fcd34d]">Tinggal dikit</div>}
       </CardContent>
     </Card>
   );

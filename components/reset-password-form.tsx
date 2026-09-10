@@ -17,14 +17,14 @@ export function ResetPasswordForm({ autoFocus = false, onBack }: { autoFocus?: b
     const supabase = createClient();
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
     const isPlaceholder = !url || url.includes("placeholder") || url.includes("localhost");
-    if (isPlaceholder) { setMsg("Reset password butuh Supabase aktif. Hubungi admin."); return; }
+    if (isPlaceholder) { setMsg("Reset password lagi nggak bisa. Coba lagi nanti atau hubungi admin."); return; }
     if (!email) { setMsg("Isi email dulu."); return; }
     setLoading(true); setMsg(null);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
     });
     if (error) setMsg(error.message);
-    else setMsg("Cek email — link reset dikirim, berlaku 1 jam. Jika tidak ada, cek spam.");
+    else setMsg("Cek email — link reset udah dikirim, berlaku 1 jam. Kalau nggak ada, coba cek folder spam.");
     setLoading(false);
   }
 

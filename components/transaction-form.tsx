@@ -116,7 +116,7 @@ export function TransactionForm({
           <div className="shrink-0 px-6 pt-6 pb-3">
             <DialogHeader className="mb-0">
               <DialogTitle>Tambah transaksi</DialogTitle>
-              <p className="text-[12px] text-mute dark:text-[#8f8b85]">Nominal → kategori → dompet → simpan. &lt; 10 detik.</p>
+              <p className="text-[12px] text-mute dark:text-[#8f8b85]">Urutannya: nominal, kategori, dompet, simpan. Nggak sampai 10 detik.</p>
             </DialogHeader>
 
             {/* type segmented */}
@@ -178,7 +178,7 @@ export function TransactionForm({
                   <Label>Kategori</Label>
                   {filteredCats.length === 0 ? (
                     <p className="text-[12px] text-mute dark:text-[#8f8b85] border hairline rounded-[12px] px-3 py-3 bg-[#f3f1ec]/60 dark:bg-[#1d1d1d]">
-                      Belum ada kategori {type === "INCOME" ? "pemasukan" : "pengeluaran"}. Tambah di menu Kategori dulu.
+                      Belum ada kategori {type === "INCOME" ? "pemasukan" : "pengeluaran"}. Bikin dulu di menu Kategori.
                     </p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
@@ -298,7 +298,7 @@ export function TransactionForm({
                         })}
                     </div>
                     {wallets.filter((w) => w.id !== walletId).length === 0 && (
-                      <p className="text-[11px] text-mute">Butuh minimal 2 dompet untuk transfer.</p>
+                      <p className="text-[11px] text-mute">Transfer butuh 2 dompet. Bikin satu lagi dulu.</p>
                     )}
                     {form.formState.isSubmitted && (form.formState.errors.toWalletId as any) && (
                       <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">
@@ -333,7 +333,7 @@ export function TransactionForm({
                       );
                     })}
                   </div>
-                  {wallets.length === 0 && <p className="text-[11px] text-mute">Belum ada dompet. Tambah di menu Dompet.</p>}
+                  {wallets.length === 0 && <p className="text-[11px] text-mute">Belum ada dompet. Bikin dulu di menu Dompet.</p>}
                   {form.formState.isSubmitted && form.formState.errors.walletId && (
                     <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">
                       {form.formState.errors.walletId.message as string}
@@ -368,7 +368,7 @@ export function TransactionForm({
                   onValueChange={(v) => form.setValue("date", v ? (new Date(`${v}T00:00:00`) as any) : (new Date() as any))}
                   className="h-11"
                 />
-                <p className="text-[11px] text-mute dark:text-[#8f8b85]">WIB — default hari ini</p>
+                <p className="text-[11px] text-mute dark:text-[#8f8b85]">Waktu WIB — bawaannya hari ini</p>
               </div>
 
               {/* 5. Catatan */}
@@ -390,7 +390,7 @@ export function TransactionForm({
               </div>
               {!canSubmit && (
                 <p className="text-center text-[11px] text-mute dark:text-[#8f8b85] mt-2">
-                  Isi nominal + {type === "TRANSFER" ? "tujuan" : "kategori"} + dompet dulu
+                  Isi nominal, {type === "TRANSFER" ? "tujuan," : "kategori,"} sama dompet dulu
                 </p>
               )}
             </div>

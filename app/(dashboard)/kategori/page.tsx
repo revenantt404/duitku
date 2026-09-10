@@ -79,7 +79,7 @@ export default function KategoriPage() {
     const c = categories.find((x) => x.id === id);
     if (!c) return;
     if (c.isSystem && !catsHook.isDemo) {
-      toast("Kategori default tidak bisa diubah — duplikat dengan nama lain");
+      toast("Kategori bawaan nggak bisa diubah — bikin salinannya aja pakai nama lain");
       return;
     }
     setEditing(id);
@@ -96,9 +96,9 @@ export default function KategoriPage() {
         await catsHook.create({ name: data.name, type: data.type as any, color: data.color, icon: data.icon });
       }
       setOpen(false);
-      toast(wasEditing ? "Kategori diperbarui" : "Kategori ditambah");
+      toast(wasEditing ? "Kategori udah diupdate" : "Kategori baru kepasang");
     } catch (e: any) {
-      toast(e?.message || "Gagal menyimpan kategori");
+      toast(e?.message || "Gagal nyimpen kategori");
     }
   }
 

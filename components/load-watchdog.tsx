@@ -99,12 +99,12 @@ export function LoadWatchdog({
           </span>
           <div className="min-w-0 flex-1">
             <div className="text-[14px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2]">
-              Loading kelamaan — bukan stuck selamanya
+              Lagi lama bukanya — coba cara di bawah
             </div>
             <p className="mt-1 text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">
               {authHint
-                ? "Sebagian data belum balik dari server (umumnya sesi login belum kebaca server atau koneksi lambat). Coba muat ulang di bawah."
-                : "Koneksi lambat. Coba muat ulang di bawah."}
+                ? "Sebagian data belum balik dari server (biasanya sesi loginnya belum kebaca atau koneksi lagi lemot). Coba tombol di bawah."
+                : "Koneksi lagi lemot. Coba tombol di bawah."}
             </p>
             <ul className="mt-3 space-y-1.5">
               {sources.map((s) => (

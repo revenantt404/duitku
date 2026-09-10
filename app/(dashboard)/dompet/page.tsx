@@ -74,9 +74,9 @@ export default function DompetPage() {
         await walletsHook.create({ name: data.name, type: data.type as any, color: data.color, icon: data.icon, initialBalance: Number(data.initialBalance) });
       }
       setOpen(false);
-      toast(wasEditing ? "Dompet diperbarui" : "Dompet ditambah");
+      toast(wasEditing ? "Dompet udah diupdate" : "Dompet baru kepasang");
     } catch (e: any) {
-      toast(e?.message || "Gagal menyimpan dompet");
+      toast(e?.message || "Gagal nyimpen dompet");
     }
   }
   function requestDelete(id: string) {
@@ -108,7 +108,7 @@ export default function DompetPage() {
         } catch {}
       }, 10000);
     } catch (e: any) {
-      toast(e?.message || "Gagal menghapus — mungkin masih dipakai di server");
+      toast(e?.message || "Gagal hapus — kayaknya masih kepake");
     }
   }
 
@@ -156,7 +156,7 @@ export default function DompetPage() {
         <SectionHead
           kicker="Dompet"
           title={
-            <>Pilih, <span className="italic">atur saldonya.</span></>
+            <>Pilih, <span className="italic">beresin saldonya.</span></>
           }
           desc={`${wallets.length} dompet aktif`}
         />
@@ -174,14 +174,14 @@ export default function DompetPage() {
         </div>
 
       {wallets.length === 0 && !isLoading && (
-        <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline"><Wallet className="h-5 w-5" strokeWidth={1.75} /></div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Belum ada dompet</div><div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Tambah minimal 1 untuk mulai — Cash, BCA, GoPay, dll.</div><Button size="sm" className="mt-4" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah dompet</Button></CardContent></Card>
+        <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]"><CardContent className="p-10 text-center"><div className="mx-auto h-10 w-10 rounded-xl bg-white dark:bg-[#141414] grid place-items-center text-mute dark:text-[#8f8b85] border hairline"><Wallet className="h-5 w-5" strokeWidth={1.75} /></div><div className="kicker mt-3">Kosong</div><div className="text-[13px] font-medium text-mute dark:text-[#a7a39d] mt-2">Belum ada dompet</div><div className="text-[12px] text-mute dark:text-[#8f8b85] mt-1">Bikin satu dulu buat mulai — Cash, BCA, GoPay, apa aja.</div><Button size="sm" className="mt-4" onClick={openCreate}><Plus className="h-4 w-4" strokeWidth={1.75} /> Tambah dompet</Button></CardContent></Card>
       )}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent onClose={() => setOpen(false)} className="max-w-[420px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
           <div className="shrink-0 px-6 pt-6 pb-3">
-            <DialogHeader className="mb-0"><DialogTitle>{editing ? "Edit Dompet" : "Tambah Dompet"}</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">{editing ? "Ubah nama/tipe/saldo awal." : "Bikin dompet baru — saldo awal bisa 0."}</p></DialogHeader>
+            <DialogHeader className="mb-0"><DialogTitle>{editing ? "Edit Dompet" : "Dompet Baru"}</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">{editing ? "Ganti nama, tipe, atau saldo awal." : "Bikin dompet baru — saldo awal boleh 0."}</p></DialogHeader>
           </div>
           <form onSubmit={form.handleSubmit(handleSubmit as any)} className="flex flex-col flex-1 min-h-0">
             <div className="flex-1 overflow-auto overscroll-contain px-6 space-y-4 pb-4">
@@ -243,7 +243,7 @@ export default function DompetPage() {
 
       <Dialog open={!!confirmId} onOpenChange={(o) => { if (!o) setConfirmId(null); }}>
         <DialogContent onClose={() => setConfirmId(null)} className="max-w-[380px]">
-          <DialogHeader><DialogTitle>Hapus dompet?</DialogTitle><p className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">Yakin hapus <span className="font-semibold text-ink dark:text-[#e9e6e2]">{wallets.find((w) => w.id === confirmId)?.name}</span>? Bisa diurungkan 10 detik.</p></DialogHeader>
+          <DialogHeader><DialogTitle>Hapus dompet?</DialogTitle><p className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">Yakin hapus <span className="font-semibold text-ink dark:text-[#e9e6e2]">{wallets.find((w) => w.id === confirmId)?.name}</span>? Masih bisa dibatalin 10 detik.</p></DialogHeader>
           <div className="flex gap-2 pt-2">
             <Button variant="outline" className="flex-1 h-11" onClick={() => setConfirmId(null)}>Batal</Button>
             <Button className="flex-1 h-11 bg-[#b42318] hover:bg-[#991b1b] text-white dark:bg-[#fca5a5] dark:text-[#141414] dark:hover:bg-[#f87171]" onClick={confirmDelete}>Hapus</Button>

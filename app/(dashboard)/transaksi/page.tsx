@@ -174,9 +174,9 @@ export default function TransaksiPage() {
         description: data.description || null,
         date: data.date ? new Date(data.date) : new Date(),
       } as any);
-      toast("Transaksi disimpan");
+      toast("Transaksi kesimpan");
     } catch (e: any) {
-      toast(e?.message || "Gagal menyimpan");
+      toast(e?.message || "Gagal nyimpen");
     }
   }
 
@@ -213,12 +213,12 @@ export default function TransaksiPage() {
         } catch {}
       }, 10000);
     } catch (e: any) {
-      toast(e?.message || "Gagal menghapus");
+      toast(e?.message || "Gagal hapus");
     }
   }
 
   function handleExport() {
-    if (filtered.length === 0) { toast("Tidak ada data untuk diekspor"); return; }
+    if (filtered.length === 0) { toast("Nggak ada data buat diekspor"); return; }
     const rows = buildTransactionCsvRows(filtered.map((t) => ({
       date: t.date,
       type: t.type,
@@ -230,15 +230,15 @@ export default function TransaksiPage() {
     })));
     const fname = `duitku-${filterMonth || new Date().toISOString().slice(0, 7)}.csv`;
     downloadCsv(fname, rows);
-    toast(`CSV diekspor · ${filtered.length} baris`);
+    toast(`CSV keunduh · ${filtered.length} baris`);
   }
 
   async function handleDuplicate(id: string) {
     try {
       await txHook.duplicate(id);
-      toast("Transaksi diduplikasi");
+      toast("Transaksi digandain");
     } catch (e: any) {
-      toast(e?.message || "Gagal duplikasi");
+      toast(e?.message || "Gagal gandain");
     }
   }
 
@@ -557,7 +557,7 @@ export default function TransaksiPage() {
         <SectionHead
           kicker="Arsip"
           title={
-            <>Daftar, <span className="italic">urut & saring.</span></>
+            <>Daftar, <span className="italic">urut, saring.</span></>
           }
           desc={`${summary.count} transaksi · ${formatRupiahCompact(summary.income)} masuk · ${formatRupiahCompact(summary.expense)} keluar`}
         />
@@ -568,13 +568,13 @@ export default function TransaksiPage() {
             ) : emptyAll ? (
               <div className="rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] p-5">
                 <div className="kicker">Mulai 3 langkah</div>
-                <div className="text-[13px] font-semibold mt-1 text-ink dark:text-[#e9e6e2]">Belum ada transaksi — setup dulu biar seamless</div>
+                <div className="text-[13px] font-semibold mt-1 text-ink dark:text-[#e9e6e2]">Belum ada transaksi — siapin dulu biar lancar</div>
                 <div className="mt-4 grid gap-2 text-[13px]">
                   <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">1.</span> Buat dompet · BCA/Cash/GoPay</span><span className="h-6 w-6 rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center text-[11px]">→</span></div>
                   <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">2.</span> Kategori ada default — tambah custom kalau perlu</span><Link href="/kategori" className="text-[11px] font-medium underline underline-offset-4">Atur kategori</Link></div>
                   <div className="rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 flex items-center justify-between gap-3"><span><span className="font-semibold">3.</span> Tambah transaksi pertama</span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAdd} triggerLabel="Coba" /></div>
                 </div>
-                <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-3">Setelah ini input cuma <span className="font-medium text-ink dark:text-[#e9e6e2]">&lt;10 detik</span> — nominal → kategori chip → simpan. Edit & duplikat 2-tap kalau salah.</div>
+                <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-3">Abis ini nyatet cuma <span className="font-medium text-ink dark:text-[#e9e6e2]">&lt;10 detik</span> — nominal, kategori, simpan. Kalau salah, gampang edit atau duplikat.</div>
               </div>
             ) : grouped.length > 0 ? (
               <div className="space-y-0">
@@ -635,7 +635,7 @@ export default function TransaksiPage() {
 
       <Dialog open={!!confirmId} onOpenChange={(o) => { if (!o) setConfirmId(null); }}>
         <DialogContent onClose={() => setConfirmId(null)} className="max-w-[380px]">
-          <DialogHeader><DialogTitle>Hapus transaksi?</DialogTitle><p className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">Yakin hapus transaksi ini? Bisa diurungkan 10 detik.</p></DialogHeader>
+          <DialogHeader><DialogTitle>Hapus transaksi?</DialogTitle><p className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d]">Yakin hapus transaksi ini? Masih bisa dibatalin 10 detik.</p></DialogHeader>
           <div className="flex gap-2 pt-2">
             <Button variant="outline" className="flex-1 h-11" onClick={() => setConfirmId(null)}>Batal</Button>
             <Button className="flex-1 h-11 bg-[#b42318] hover:bg-[#991b1b] text-white dark:bg-[#fca5a5] dark:text-[#141414] dark:hover:bg-[#f87171]" onClick={confirmDelete}>Hapus</Button>
@@ -646,7 +646,7 @@ export default function TransaksiPage() {
       <Dialog open={!!editTx} onOpenChange={(o) => { if (!o) setEditTx(null); }}>
         <DialogContent onClose={() => setEditTx(null)} className="max-w-[440px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
           <div className="shrink-0 px-6 pt-6 pb-3">
-            <DialogHeader className="mb-0"><DialogTitle>Edit transaksi</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">Ubah nominal/kategori/dompet — 2-tap selesai.</p></DialogHeader>
+            <DialogHeader className="mb-0"><DialogTitle>Edit transaksi</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">Ubah nominal, kategori, atau dompet — bentar doang.</p></DialogHeader>
             <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
               {[
                 { v: "EXPENSE", label: "Keluar" },

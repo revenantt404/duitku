@@ -64,9 +64,9 @@ export default function AnggaranPage() {
         await budgetsHook.create({ categoryId: data.categoryId, amount: Number(data.amount), month: curMonth, year: curYear });
       }
       setOpen(false);
-      toast(wasEditing ? "Anggaran diperbarui" : "Anggaran ditambah");
+      toast(wasEditing ? "Limit udah diupdate" : "Limit baru kepasang");
     } catch (e: any) {
-      toast(e?.message || "Gagal menyimpan anggaran");
+      toast(e?.message || "Gagal nyimpen limit");
     }
   }
   function requestDelete(id: string) { setConfirmId(id); }
@@ -79,7 +79,7 @@ export default function AnggaranPage() {
     setConfirmId(null);
     try {
       await budgetsHook.remove(id);
-      toastUndo("Anggaran dihapus", async () => {
+      toastUndo("Limit dihapus", async () => {
         try {
           if (budgetsHook.isDemo) {
             budgetsHook.setData((prev: any) => {
@@ -93,7 +93,7 @@ export default function AnggaranPage() {
         } catch {}
       }, 10000);
     } catch (e: any) {
-      toast(e?.message || "Gagal menghapus anggaran");
+      toast(e?.message || "Gagal hapus limit");
     }
   }
   const rows = useMemo(() => {
