@@ -11,6 +11,7 @@ import {
   listGoals, createGoal as apiCreateGoal, updateGoal as apiUpdateGoal, deleteGoal as apiDeleteGoal,
   type ApiWallet, type ApiCategory, type ApiTx, type ApiBudget, type ApiGoal,
 } from "./api";
+import { SESSION_FLAG } from "./session-flag";
 
 // ─ helper demo-mimic yang sinkron dengan localStorage
 function useLocalArray<T>(key: string, initial: T[]) {
@@ -43,6 +44,15 @@ function useLocalArray<T>(key: string, initial: T[]) {
 function useIsDemo(): boolean | null {
   const [isDemo, setIsDemo] = useState<boolean | null>(null);
   useEffect(() => {
+    try {
+      // Flag basi dari eksperimen demo lokal: kalau sesi Supabase asli (login Google/email)
+      // sedang jalan, flag demo harus dibersihkan biar hook TIDAK terkunci di mode demo
+      // sementara fetch /api/* (yang bawa cookie sesi asli) malah 401 terus → skeleton infinite.
+      // Ini salah satu pemicu utama stuck skeleton pasca login Google.
+      if (sessionStorage.getItem(SESSION_FLAG) === "supabase") {
+        localStorage.removeItem("duitku_demo_user");
+      }
+    } catch {}
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
     const placeholder = !url || !key || url.includes("placeholder") || key === "placeholder" || url.includes("localhost");

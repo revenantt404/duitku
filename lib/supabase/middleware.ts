@@ -23,7 +23,19 @@ export async function updateSession(request: NextRequest) {
       },
     }
   );
-  const { data: { user } } = await supabase.auth.getUser();
+  // Timeout: sesi Supabase lambat (cold start) tidak boleh menggantung navigasi —
+  // lewat 8 dtk, lewatkan request (fail-open); page + watchdog yang handle recovery.
+  let user: any = null;
+  try {
+    const got: any = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
+    ]);
+    if (got === null) return supabaseResponse;
+    user = got?.data?.user ?? null;
+  } catch {
+    user = null;
+  }
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
   const isProtected =
     request.nextUrl.pathname.startsWith("/dashboard") ||

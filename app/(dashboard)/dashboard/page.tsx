@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DashboardSkeleton } from "@/components/skeletons";
+import { LoadWatchdog } from "@/components/load-watchdog";
 import { Progress } from "@/components/ui/progress";
 import { ExpenseDonut } from "@/components/charts/expense-donut";
 import { MonthlyBar } from "@/components/charts/monthly-bar";
@@ -198,9 +199,35 @@ export default function DashboardPage() {
     return { path: d, end: pts[pts.length - 1] };
   }, [barData]);
 
+  // Watchdog anti skeleton-infinite: kalau query belum settle > 12 dtk
+  // (sesi mati / DB unreachable / flag demo basi), tampilkan panel recovery
+  // dengan tombol Coba lagi / Muat ulang / Logout — bukan skeleton selamanya.
+  const watchdogSources = [
+    { key: "wallets", label: "Dompet", done: walletsHook.hydrated && !walletsHook.loading, failed: !!walletsHook.error },
+    { key: "categories", label: "Kategori", done: catsHook.hydrated && !catsHook.loading, failed: !!catsHook.error },
+    { key: "transactions", label: "Transaksi", done: txHook.hydrated && !txHook.loading, failed: !!txHook.error },
+    { key: "budgets", label: "Anggaran", done: budgetsHook.hydrated && !budgetsHook.loading, failed: !!budgetsHook.error },
+    { key: "goals", label: "Tujuan", done: goalsHook.hydrated && !goalsHook.loading, failed: !!goalsHook.error },
+  ];
+
+  function handleWatchdogRetry() {
+    walletsHook.refresh();
+    catsHook.refresh();
+    txHook.refresh();
+    budgetsHook.refresh();
+    goalsHook.refresh();
+  }
+
   // First load: tampilkan skeleton full-page (layout sama persis dengan konten asli)
   // biar gak ada flash "—" / "Rp 0" / empty state sebelum query settle.
-  if (isLoading) return <DashboardSkeleton />;
+  // Watchdog ikut dirender di atas skeleton biar kasus macet ada jalan keluar.
+  if (isLoading)
+    return (
+      <div className="space-y-5">
+        <LoadWatchdog sources={watchdogSources} onRetry={handleWatchdogRetry} />
+        <DashboardSkeleton />
+      </div>
+    );
 
   return (
     <div className="space-y-5">

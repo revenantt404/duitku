@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { SESSION_FLAG } from "@/lib/session-flag";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,12 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
     }
     setLoading(true);
     setMsg(null);
+    // Tandai alur sesi Supabase asli — biar flag demo basi tidak mengunci hook data
+    // ke mode demo pasca login Google (pemicu skeleton infinite).
+    try {
+      sessionStorage.setItem(SESSION_FLAG, "supabase");
+      localStorage.removeItem("duitku_demo_user");
+    } catch {}
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -52,6 +59,7 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
     e.preventDefault();
     if (isPlaceholder) {
       localStorage.setItem("duitku_demo_user", JSON.stringify({ email: email || "demo@duitku.local", name: "Demo User" }));
+      try { sessionStorage.removeItem(SESSION_FLAG); } catch {}
       onSuccess?.();
       router.push("/dashboard");
       return;
@@ -62,6 +70,11 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setMsg(error.message);
     else {
+      // Sama seperti Google: tandai sesi asli + bersihkan flag demo basi.
+      try {
+        sessionStorage.setItem(SESSION_FLAG, "supabase");
+        localStorage.removeItem("duitku_demo_user");
+      } catch {}
       onSuccess?.();
       router.push("/dashboard");
     }
@@ -71,6 +84,7 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
   async function handleSignup() {
     if (isPlaceholder) {
       localStorage.setItem("duitku_demo_user", JSON.stringify({ email: email || "demo@duitku.local", name: "Demo User" }));
+      try { sessionStorage.removeItem(SESSION_FLAG); } catch {}
       onSuccess?.();
       router.push("/dashboard");
       return;
@@ -79,6 +93,7 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
     setLoading(true);
     setMsg(null);
     const supabase = createClient();
+    try { sessionStorage.setItem(SESSION_FLAG, "supabase"); } catch {}
     const { error } = await supabase.auth.signUp({
       email, password,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },

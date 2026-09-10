@@ -6,14 +6,15 @@ import { ensureUserAndGetId } from "@/lib/ensure-user";
 
 async function getUserId(): Promise<string | null> {
   const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
+  // Timeout: auth lambat jangan gantung API. DB error → throw (500), bukan 401.
+  const got: any = await Promise.race([
+    supabase.auth.getUser(),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
+  ]);
+  if (got === null) throw new Error("Sesi Supabase lambat — coba muat ulang");
+  const { data: { user }, error } = got;
   if (error || !user || !user.email) return null;
-  try {
-    return await ensureUserAndGetId(user as any);
-  } catch (e) {
-    console.error("[goals] ensureUser failed:", e);
-    return null;
-  }
+  return await ensureUserAndGetId(user as any);
 }
 
 export async function GET() {

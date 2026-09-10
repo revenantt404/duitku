@@ -99,22 +99,23 @@ export default function LandingPage() {
             <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:-translate-y-px group-hover:translate-x-px" strokeWidth={1.75} />
           </button>
 
-          {/* headline — bukan satu warna datar lagi: pill ink + italic + underline gambar tangan + koin orbit */}
+          {/* headline — campuran solid + outline + pill + italic + squiggle: hidup, tetap paper/ink */}
           <h1 className="relative mt-5 font-display text-[44px] sm:text-[64px] font-[300] tracking-[-0.04em] leading-[0.98]">
-            Catat duit,
-            <br />
-            <span className="mt-2 inline-flex flex-wrap items-center gap-x-2.5 gap-y-2 sm:gap-x-3">
+            <span className="animate-hero-rise block">
+              Catat <span className="text-outline font-[500]">duit,</span>
+            </span>
+            <span className="animate-hero-rise mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-2 sm:gap-x-3" style={{ animationDelay: "120ms" }}>
               <span className="inline-flex -rotate-2 items-center rounded-[16px] sm:rounded-[20px] bg-ink px-3.5 sm:px-5 py-0.5 sm:py-1 text-paper dark:bg-[#e9e6e2] dark:text-[#141414] font-[500] shadow-sm">
                 jelas
               </span>
               <span className="relative inline-block italic font-[500]">
                 hidup.
-                <svg className="absolute -bottom-1.5 sm:-bottom-2 left-0 w-full text-ink dark:text-[#e9e6e2]" viewBox="0 0 220 12" fill="none" aria-hidden>
+                <svg className="absolute -bottom-1.5 sm:-bottom-2 left-0 w-full overflow-visible text-ink dark:text-[#e9e6e2]" viewBox="0 0 220 12" fill="none" preserveAspectRatio="none" aria-hidden>
                   <path className="squiggle-path" pathLength={1} d="M3 9C40 2 80 11 115 6s75-3 102 1" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               </span>
               <span className="relative ml-1 inline-flex -translate-y-1 align-middle text-ink dark:text-[#e9e6e2]" aria-hidden title="Rp">
-                <span className="animate-spin-slow absolute -inset-2">
+                <span className="absolute -inset-1">
                   <svg viewBox="0 0 48 48" className="h-full w-full" fill="none">
                     <circle cx="24" cy="24" r="21" stroke="currentColor" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="3 6" strokeLinecap="round" />
                   </svg>
@@ -126,7 +127,7 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="mt-5 text-[15px] leading-[1.75] text-mute dark:text-[#a7a39d] max-w-[48ch]">
+          <p className="animate-hero-rise mt-5 text-[15px] leading-[1.75] text-mute dark:text-[#a7a39d] max-w-[48ch]" style={{ animationDelay: "220ms" }}>
             DuitKu bikin <strong className="font-semibold text-ink dark:text-[#e9e6e2]">10 detik per transaksi</strong> terasa
             enteng. <strong className="font-semibold text-ink dark:text-[#e9e6e2]">Multi-dompet</strong>, budgeting,
             dan <strong className="font-semibold text-ink dark:text-[#e9e6e2]">grafik jujur</strong> — warm paper,
@@ -331,7 +332,7 @@ export default function LandingPage() {
 
           {/* stamp + caption */}
           <div className="relative">
-            <div aria-hidden className="absolute -top-4 right-4 hidden sm:block rotate-3 rounded-lg border-2 border-ink/60 dark:border-[#e9e6e2]/60 px-2.5 py-1 text-[10px] font-bold tracking-[0.22em] opacity-70 bg-paper/90 dark:bg-[#141414]/90 backdrop-blur">
+            <div aria-hidden className="absolute -top-4 right-4 hidden sm:block rotate-3 rounded-lg border-2 border-ink/60 dark:border-[#e9e6e2]/60 px-2.5 py-1 text-[10px] font-bold tracking-[0.22em] opacity-70 bg-paper dark:bg-[#141414]">
               TERCATAT ✓
             </div>
             <div className="flex items-center justify-between pt-3 text-[11px] text-mute dark:text-[#8f8b85]">

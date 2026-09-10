@@ -6,15 +6,18 @@ import { ensureUserAndGetId } from "@/lib/ensure-user";
 
 async function getUserIdOr401(): Promise<string | null> {
   const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
+  // Timeout: auth lambat (cold start) jangan gantung API selamanya.
+  const got: any = await Promise.race([
+    supabase.auth.getUser(),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
+  ]);
+  if (got === null) throw new Error("Sesi Supabase lambat — coba muat ulang");
+  const { data: { user }, error } = got;
   if (error || !user) return null;
   if (!user.email) return null;
-  try {
-    return await ensureUserAndGetId(user as any);
-  } catch (e) {
-    console.error("[wallets] ensureUser failed:", e);
-    return null;
-  }
+  // Jangan telan DB error jadi 401 — biarkan throw → 500 biar ketahuan
+  // (sebelumnya ensureUser gagal me-return null = "Unauthorized" yang menyesatkan).
+  return await ensureUserAndGetId(user as any);
 }
 
 export async function GET() {

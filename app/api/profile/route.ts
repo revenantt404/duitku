@@ -4,14 +4,25 @@ import { createClient } from "@/lib/supabase/server";
 import { ensureUserAndGetId } from "@/lib/ensure-user";
 
 async function getAuthOr401() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user || !user.email) return null;
   try {
-    const dbId = await ensureUserAndGetId(user as any);
-    return { authUser: user, dbId };
+    const supabase = await createClient();
+    // Timeout 8 dtk — profil gagal diam-diam (AppShell abaikan), jangan gantung.
+    const got: any = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
+    ]);
+    if (got === null) return null;
+    const { data: { user }, error } = got;
+    if (error || !user || !user.email) return null;
+    try {
+      const dbId = await ensureUserAndGetId(user as any);
+      return { authUser: user, dbId };
+    } catch (e) {
+      console.error("[profile] ensureUser failed:", e);
+      return null;
+    }
   } catch (e) {
-    console.error("[profile] ensureUser failed:", e);
+    console.error("[profile] auth failed:", e);
     return null;
   }
 }

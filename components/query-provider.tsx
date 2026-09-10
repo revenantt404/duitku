@@ -8,7 +8,13 @@ function makeQueryClient() {
       queries: {
         staleTime: 30_000,
         gcTime: 5 * 60_000,
-        retry: 1,
+        // Jangan retry 401/403/404: itu sesi mati / bukan-milik — retry cuma
+        // memperpanjang skeleton tanpa hasil. Error jaringan/5xx tetap retry 1x.
+        retry: (failureCount, error: any) => {
+          const msg = String(error?.message || "");
+          if (/401|403|404|Unauthorized|silakan login ulang/i.test(msg)) return false;
+          return failureCount < 1;
+        },
         retryDelay: 800,
         refetchOnWindowFocus: true,
         refetchOnMount: false,

@@ -4,14 +4,34 @@
  * Dipakai oleh lib/use-data.ts; tidak dipanggil saat isDemoModeClient() === true.
  */
 
-type FetchOpts = RequestInit & { rawQuery?: string };
+type FetchOpts = RequestInit & { rawQuery?: string; timeoutMs?: number };
+
+export const API_TIMEOUT_MS = 12_000;
+
+function isTimeoutError(e: unknown): boolean {
+  return e instanceof DOMException && e.name === "TimeoutError";
+}
 
 async function req<T>(path: string, opts: FetchOpts = {}): Promise<T> {
-  const res = await fetch(path, {
-    credentials: "include",
-    headers: { "content-type": "application/json", ...(opts.headers || {}) },
-    ...opts,
-  });
+  const { timeoutMs = API_TIMEOUT_MS, rawQuery: _rawQuery, ...init } = opts;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  let res: Response;
+  try {
+    res = await fetch(path, {
+      credentials: "include",
+      headers: { "content-type": "application/json", ...(init.headers || {}) },
+      ...init,
+      signal: ctrl.signal,
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    if (isTimeoutError(e) || (e instanceof Error && e.name === "AbortError")) {
+      throw new Error(`Server lama merespons (> ${Math.round(timeoutMs / 1000)} dtk) — coba Muat ulang`);
+    }
+    throw e;
+  }
+  clearTimeout(timer);
   const text = await res.text();
   let json: any = null;
   try {
