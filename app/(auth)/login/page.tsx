@@ -27,7 +27,6 @@ export default function LoginPage() {
         <Card className="rounded-[18px] border hairline bg-white dark:bg-[#1d1d1d] overflow-hidden">
           <div className="h-10 flex items-center px-4 bg-[#f3f1ec] dark:bg-[#222] border-b hairline">
             <span className="text-[12px] font-medium text-mute dark:text-[#a7a39d]">DuitKu — Masuk</span>
-            <span className="ml-auto text-[11px] text-mute dark:text-[#8f8b85] border hairline rounded-full px-2 py-0.5 bg-white dark:bg-[#1d1d1d]">warm</span>
           </div>
           <CardHeader className="text-center pb-3 pt-6">
             <div className="mx-auto h-10 w-10 rounded-xl bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center border hairline"><Wallet className="h-5 w-5" strokeWidth={1.75} /></div>

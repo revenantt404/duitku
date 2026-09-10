@@ -22,7 +22,6 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
       <DialogContent onClose={() => onOpenChange(false)} grabber={false} className="max-w-[420px] p-0 overflow-hidden rounded-[20px] sm:rounded-[20px]">
         <div className="h-10 flex items-center pl-4 pr-14 bg-[#f3f1ec] dark:bg-[#222] border-b hairline">
           <span className="text-[12px] font-medium text-mute dark:text-[#a7a39d]">DuitKu — {isReset ? "Lupa password" : "Masuk"}</span>
-          <span className="ml-auto text-[11px] text-mute dark:text-[#8f8b85] border hairline rounded-full px-2 py-0.5 bg-white dark:bg-[#1d1d1d]">warm</span>
         </div>
         <div className="p-6 pt-5">
           <div key={view} className={isReset ? "auth-in-right" : "auth-in-left"}>

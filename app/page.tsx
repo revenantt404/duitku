@@ -73,7 +73,6 @@ export default function LandingPage() {
           <Link href="/" className="flex items-center gap-2.5">
             <span className="h-8 w-8 rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center text-[10px] font-bold">Rp</span>
             <span className="text-[18px] font-[500] tracking-tight">duitku.</span>
-            <span className="hidden sm:inline text-[11px] text-mute dark:text-[#8f8b85] border hairline rounded-full px-2 py-0.5">warm</span>
           </Link>
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={() => setLoginOpen(true)}>Mulai <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>
