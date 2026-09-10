@@ -151,7 +151,7 @@ export default function KategoriPage() {
   const exp = categories.filter((c) => c.type === "EXPENSE");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 content-in">
       <PageHero
         title={
           <>
@@ -221,10 +221,10 @@ export default function KategoriPage() {
                 desc={`${grouped.exp.length} kategori`}
               />
               <div className="mt-2.5 grid gap-2">
-                {grouped.exp.map((c) => {
+                {grouped.exp.map((c, i) => {
                   const readOnly = c.isSystem && !catsHook.isDemo;
                   return (
-                    <Card key={c.id} className={readOnly ? "opacity-90" : "card-hover"}>
+                    <Card key={c.id} className={`${readOnly ? "opacity-90" : "card-hover"} content-in stagger-${Math.min(i, 5) + 1}`}>
                       <CardContent className="p-3.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline bg-white dark:bg-[#1d1d1d]" style={{ color: c.color }}>
@@ -261,10 +261,10 @@ export default function KategoriPage() {
                 desc={`${grouped.inc.length} kategori`}
               />
               <div className="mt-2.5 grid gap-2">
-                {grouped.inc.map((c) => {
+                {grouped.inc.map((c, i) => {
                   const readOnly = c.isSystem && !catsHook.isDemo;
                   return (
-                    <Card key={c.id} className={readOnly ? "opacity-90" : "card-hover"}>
+                    <Card key={c.id} className={`${readOnly ? "opacity-90" : "card-hover"} content-in stagger-${Math.min(i, 5) + 1}`}>
                       <CardContent className="p-3.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline bg-white dark:bg-[#1d1d1d]" style={{ color: c.color }}>

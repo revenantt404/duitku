@@ -314,7 +314,7 @@ export default function TransaksiPage() {
   }, [summary, filterMonth, filterType]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 content-in">
       <PageHero
         title={
           <>
@@ -585,7 +585,7 @@ export default function TransaksiPage() {
                       <span className="text-[11px] tabular-nums text-mute dark:text-[#8f8b85]">{group.items.length} transaksi</span>
                     </div>
                     <div className="space-y-2 py-3">
-                      {group.items.map((t) => {
+                      {group.items.map((t, ti) => {
                         const cat = t.categoryId ? catMap.get(t.categoryId) : null;
                         const w = walletMap.get(t.walletId);
                         const toW = t.toWalletId ? walletMap.get(t.toWalletId) : null;
@@ -593,7 +593,7 @@ export default function TransaksiPage() {
                         const isExpense = t.type === "EXPENSE";
                         const title = t.type === "TRANSFER" ? `Transfer ${w?.name} → ${toW?.name}` : cat?.name || t.description || "Tanpa kategori";
                         return (
-                          <div key={t.id} className="flex items-center justify-between rounded-[14px] border hairline bg-white dark:bg-[#1d1d1d] px-3.5 py-3 gap-3">
+                          <div key={t.id} className={`flex items-center justify-between rounded-[14px] border hairline bg-white dark:bg-[#1d1d1d] px-3.5 py-3 gap-3 content-in stagger-${Math.min(ti, 5) + 1}`}>
                             <div className="flex items-center gap-3 min-w-0">
                               <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2]" : "bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#a7a39d]"}`}>
                                 {isIncome ? <ArrowUpCircle className="h-4 w-4" strokeWidth={2} /> : isExpense ? <ArrowDownCircle className="h-4 w-4" strokeWidth={2} /> : <ArrowLeftRight className="h-4 w-4" strokeWidth={2} />}

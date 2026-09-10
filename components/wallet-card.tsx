@@ -1,11 +1,11 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatRupiah } from "@/lib/utils";
+import { cn, formatRupiah } from "@/lib/utils";
 
-export function WalletCard({ wallet, balance, negative }: { wallet: { id: string; name: string; type: string; color: string; icon: string }; balance: number; negative?: boolean }) {
+export function WalletCard({ wallet, balance, negative, className }: { wallet: { id: string; name: string; type: string; color: string; icon: string }; balance: number; negative?: boolean; className?: string }) {
   const state: "good" | "warn" | "bad" = negative || balance < 0 ? "bad" : balance < 500000 ? "warn" : "good";
   return (
-    <Card className="card-hover">
+    <Card className={cn("card-hover", className)}>
       <CardContent className="p-4">
         <div className="min-w-0">
           <div className="text-[13px] font-semibold leading-tight tracking-tight truncate text-ink dark:text-[#e9e6e2]">{wallet.name}</div>

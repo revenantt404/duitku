@@ -125,7 +125,7 @@ export default function AnggaranPage() {
   }, [periodLabel, rows, totalBudget, totalSpent]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 content-in">
       <PageHero
         title={
           <>
@@ -179,10 +179,10 @@ export default function AnggaranPage() {
         <div className="mt-3 grid gap-3">
           {isLoading ? (
             <Card className="border hairline"><CardContent className="p-10 text-center text-[13px] text-mute">Memuat…</CardContent></Card>
-          ) : rows.map(({ budget, spent, pct, cat, over }) => {
+          ) : rows.map(({ budget, spent, pct, cat, over }, i) => {
             const nearLimit = !over && pct >= 80;
             return (
-              <Card key={budget.id} className={over ? "border-ink dark:border-[#e9e6e2] bg-[#f3f1ec] dark:bg-[#1d1d1d]" : "card-hover"}>
+              <Card key={budget.id} className={`${over ? "border-ink dark:border-[#e9e6e2] bg-[#f3f1ec] dark:bg-[#1d1d1d]" : "card-hover"} content-in stagger-${Math.min(i, 5) + 1}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">

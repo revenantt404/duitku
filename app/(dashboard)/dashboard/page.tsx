@@ -230,7 +230,7 @@ export default function DashboardPage() {
     );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 content-in">
       <PageHero
         title={
           <>
@@ -322,8 +322,8 @@ export default function DashboardPage() {
           action={<Link href="/dompet" className="text-[12px] font-medium text-ink dark:text-[#e9e6e2] hover:underline underline-offset-4 decoration-[#c9c5c0] dark:decoration-[#3a3a3a]">Kelola →</Link>}
         />
         <div className="mt-3 grid grid-cols-2 gap-3">
-          {balances.map(({ wallet, balance }) => (
-            <WalletCard key={wallet.id} wallet={wallet as any} balance={balance} negative={balance < 0} />
+          {balances.map(({ wallet, balance }, i) => (
+            <WalletCard key={wallet.id} wallet={wallet as any} balance={balance} negative={balance < 0} className={`content-in stagger-${Math.min(i, 5) + 1}`} />
           ))}
         </div>
       </div>
@@ -393,14 +393,14 @@ export default function DashboardPage() {
                       <span className="text-[11px] tabular-nums text-mute dark:text-[#8f8b85]">{group.items.length}</span>
                     </div>
                     <div className="space-y-2 py-3">
-                      {group.items.map((t) => {
+                      {group.items.map((t, ti) => {
                         const cat = t.categoryId ? catMap.get(t.categoryId) : null;
                         const w = walletMap.get(t.walletId);
                         const toW = t.toWalletId ? walletMap.get(t.toWalletId) : null;
                         const isIncome = t.type === "INCOME";
                         const isExpense = t.type === "EXPENSE";
                         return (
-                          <div key={t.id} className="flex items-center justify-between rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] px-3.5 py-3 gap-3">
+                          <div key={t.id} className={`flex items-center justify-between rounded-[14px] border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] px-3.5 py-3 gap-3 content-in stagger-${Math.min(ti, 5) + 1}`}>
                             <div className="flex items-center gap-3 min-w-0">
                               <div className={`h-9 w-9 rounded-xl grid place-items-center shrink-0 border hairline ${isIncome ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : isExpense ? "bg-white dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]"}`}>
                                 {isIncome ? <ArrowUpCircle className="h-4 w-4" strokeWidth={2} /> : isExpense ? <ArrowDownCircle className="h-4 w-4" strokeWidth={2} /> : <ArrowLeftRight className="h-4 w-4" strokeWidth={2} />}
@@ -448,14 +448,14 @@ export default function DashboardPage() {
         />
         <Card className="mt-3">
           <CardContent className="pt-4 space-y-3">
-            {budgets.slice(0, 3).map((b) => {
+            {budgets.slice(0, 3).map((b, bi) => {
               const cat = catMap.get(b.categoryId);
               const spent = monthTx.filter((t) => t.type === "EXPENSE" && t.categoryId === b.categoryId).reduce((a, v) => a + v.amount, 0);
               const pct = b.amount ? Math.min(100, Math.round((spent / b.amount) * 100)) : 0;
               const over = spent > b.amount;
               const near = !over && pct >= 80;
               return (
-                <div key={b.id}>
+                <div key={b.id} className={`content-in stagger-${Math.min(bi, 5) + 1}`}>
                   <div className="flex justify-between text-[12px] mb-1.5">
                     <span className="font-semibold text-ink dark:text-[#e9e6e2]">{cat?.name}</span>
                     <span className={`num ${over ? "text-[#b42318] dark:text-[#fca5a5]" : near ? "text-[#a16207] dark:text-[#fcd34d]" : "text-mute dark:text-[#8f8b85]"}`}>{pct}% · {formatRupiahCompact(spent)} / {formatRupiahCompact(b.amount)}</span>

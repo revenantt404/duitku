@@ -121,7 +121,7 @@ export default function DompetPage() {
   }, [wallets.length, total, balances]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 content-in">
       <PageHero
         title={
           <>
@@ -161,8 +161,8 @@ export default function DompetPage() {
           desc={`${wallets.length} dompet aktif`}
         />
         <div className="mt-3 grid grid-cols-2 gap-3">
-          {balances.map(({ wallet, balance }) => (
-            <div key={wallet.id} className="relative">
+          {balances.map(({ wallet, balance }, i) => (
+            <div key={wallet.id} className={`relative content-in stagger-${Math.min(i, 5) + 1}`}>
               <WalletCard wallet={wallet as any} balance={balance} negative={balance < 0} />
               <div className="absolute top-2 right-2 flex gap-1">
                 <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-white dark:bg-[#1d1d1d] border hairline" onClick={() => openEdit(wallet.id)} aria-label="Edit dompet"><Pencil className="h-3.5 w-3.5" strokeWidth={1.75} /></Button>

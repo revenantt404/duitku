@@ -128,7 +128,7 @@ export default function TujuanPage() {
   ], [goals, totalCurrent, totalTarget]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 content-in">
       <PageHero
         title={
           <>
@@ -164,13 +164,13 @@ export default function TujuanPage() {
         <div className="mt-3 grid gap-3">
           {isLoading ? (
             <Card className="border hairline"><CardContent className="p-10 text-center text-[13px] text-mute">Memuat…</CardContent></Card>
-          ) : goals.map((g) => {
+          ) : goals.map((g, i) => {
             const pct = g.targetAmount ? Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100)) : 0;
             const done = g.currentAmount >= g.targetAmount;
             const sisa = Math.max(0, g.targetAmount - g.currentAmount);
             const daysLeft = g.deadline ? Math.ceil((new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
             return (
-              <Card key={g.id} className={done ? "border-ink dark:border-[#e9e6e2] bg-[#f3f1ec] dark:bg-[#1d1d1d]" : "card-hover"}>
+              <Card key={g.id} className={`${done ? "border-ink dark:border-[#e9e6e2] bg-[#f3f1ec] dark:bg-[#1d1d1d]" : "card-hover"} content-in stagger-${Math.min(i, 5) + 1}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
