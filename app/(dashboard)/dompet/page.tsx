@@ -67,13 +67,18 @@ export default function DompetPage() {
   }
   async function handleSubmit(data: WalletInput) {
     const wasEditing = !!editing;
+    const id = editing;
+    const snapshot = { ...data };
+    // Instant close: tutup modal dulu (0ms), sync ke server belakangan — pola sama kayak tambah transaksi.
+    setOpen(false);
+    setEditing(null);
+    form.reset({ name: "", type: "CASH" as any, color: "#1a1a1a", icon: "wallet", initialBalance: 0 });
     try {
-      if (editing) {
-        await walletsHook.update(editing, { name: data.name, type: data.type as any, color: data.color, icon: data.icon, initialBalance: Number(data.initialBalance) });
+      if (id) {
+        await walletsHook.update(id, { name: snapshot.name, type: snapshot.type as any, color: snapshot.color, icon: snapshot.icon, initialBalance: Number(snapshot.initialBalance) });
       } else {
-        await walletsHook.create({ name: data.name, type: data.type as any, color: data.color, icon: data.icon, initialBalance: Number(data.initialBalance) });
+        await walletsHook.create({ name: snapshot.name, type: snapshot.type as any, color: snapshot.color, icon: snapshot.icon, initialBalance: Number(snapshot.initialBalance) });
       }
-      setOpen(false);
       toast(wasEditing ? "Dompet udah diupdate" : "Dompet baru kepasang");
     } catch (e: any) {
       toast(e?.message || "Gagal nyimpen dompet");

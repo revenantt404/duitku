@@ -469,11 +469,19 @@ export function useBudgets() {
       demo[1]((prev) => [...prev, row]);
       return row;
     }
-    const b = await apiCreateBudget(input as any);
-    const mapped = mapApiBudget(b);
-    qc.setQueryData<UBudget[]>(["budgets"], (old) => [...(old ?? []), mapped]);
-    qc.invalidateQueries({ queryKey: ["budgets"] });
-    return mapped;
+    const temp: UBudget = { id: `b_temp_${Date.now()}`, ...input };
+    const prev = qc.getQueryData<UBudget[]>(["budgets"]);
+    qc.setQueryData<UBudget[]>(["budgets"], (old) => [...(old ?? []), temp]);
+    try {
+      const b = await apiCreateBudget(input as any);
+      const mapped = mapApiBudget(b);
+      qc.setQueryData<UBudget[]>(["budgets"], (old) => (old ?? []).map((x) => x.id === temp.id ? mapped : x));
+      qc.invalidateQueries({ queryKey: ["budgets"] });
+      return mapped;
+    } catch (e) {
+      qc.setQueryData(["budgets"], prev);
+      throw e;
+    }
   }, [isDemo, demo, qc]);
 
   const update = useCallback(async (id: string, patch: Partial<{ categoryId: string; amount: number; month: number; year: number }>) => {
@@ -482,21 +490,36 @@ export function useBudgets() {
       return;
     }
     if (patch.amount !== undefined && patch.categoryId === undefined && patch.month === undefined && patch.year === undefined) {
-      const b = await apiUpdateBudget(id, patch.amount as any);
-      const mapped = mapApiBudget(b);
-      qc.setQueryData<UBudget[]>(["budgets"], (old) => (old ?? []).map((x) => x.id === id ? mapped : x));
-      qc.invalidateQueries({ queryKey: ["budgets"] });
-      return mapped;
+      const prev = qc.getQueryData<UBudget[]>(["budgets"]);
+      qc.setQueryData<UBudget[]>(["budgets"], (old) => (old ?? []).map((x) => x.id === id ? { ...x, amount: patch.amount as number } : x));
+      try {
+        const b = await apiUpdateBudget(id, patch.amount as any);
+        const mapped = mapApiBudget(b);
+        qc.setQueryData<UBudget[]>(["budgets"], (old) => (old ?? []).map((x) => x.id === id ? mapped : x));
+        qc.invalidateQueries({ queryKey: ["budgets"] });
+        return mapped;
+      } catch (e) {
+        qc.setQueryData(["budgets"], prev);
+        throw e;
+      }
     }
     const existing = (qc.getQueryData<UBudget[]>(["budgets"]) ?? []).find((b) => b.id === id);
     if (!existing) throw new Error("Budget tidak ditemukan");
     const next = { categoryId: patch.categoryId ?? existing.categoryId, amount: patch.amount ?? existing.amount, month: patch.month ?? existing.month, year: patch.year ?? existing.year };
-    await apiDeleteBudget(id);
-    const created = await apiCreateBudget(next as any);
-    const mapped = mapApiBudget(created);
-    qc.setQueryData<UBudget[]>(["budgets"], (old) => [...(old ?? []).filter((b) => b.id !== id), mapped]);
-    qc.invalidateQueries({ queryKey: ["budgets"] });
-    return mapped;
+    const prev = qc.getQueryData<UBudget[]>(["budgets"]);
+    const temp: UBudget = { id: `b_temp_${Date.now()}`, ...next };
+    qc.setQueryData<UBudget[]>(["budgets"], (old) => [...(old ?? []).filter((b) => b.id !== id), temp]);
+    try {
+      await apiDeleteBudget(id);
+      const created = await apiCreateBudget(next as any);
+      const mapped = mapApiBudget(created);
+      qc.setQueryData<UBudget[]>(["budgets"], (old) => (old ?? []).map((b) => b.id === temp.id ? mapped : b));
+      qc.invalidateQueries({ queryKey: ["budgets"] });
+      return mapped;
+    } catch (e) {
+      qc.setQueryData(["budgets"], prev);
+      throw e;
+    }
   }, [isDemo, demo, qc]);
 
   const remove = useCallback(async (id: string) => {

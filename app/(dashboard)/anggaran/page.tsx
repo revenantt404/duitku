@@ -57,13 +57,18 @@ export default function AnggaranPage() {
   }
   async function handleSubmit(data: BudgetInput) {
     const wasEditing = !!editing;
+    const id = editing;
+    const snapshot = { ...data };
+    // Instant close: tutup modal dulu (0ms), sync ke server belakangan — pola sama kayak tambah transaksi.
+    setOpen(false);
+    setEditing(null);
+    form.reset({ categoryId: expenseCats[0]?.id || "", amount: 1000000, month: curMonth, year: curYear });
     try {
-      if (editing) {
-        await budgetsHook.update(editing, { categoryId: data.categoryId, amount: Number(data.amount) });
+      if (id) {
+        await budgetsHook.update(id, { categoryId: snapshot.categoryId, amount: Number(snapshot.amount) });
       } else {
-        await budgetsHook.create({ categoryId: data.categoryId, amount: Number(data.amount), month: curMonth, year: curYear });
+        await budgetsHook.create({ categoryId: snapshot.categoryId, amount: Number(snapshot.amount), month: curMonth, year: curYear });
       }
-      setOpen(false);
       toast(wasEditing ? "Limit udah diupdate" : "Limit baru kepasang");
     } catch (e: any) {
       toast(e?.message || "Gagal nyimpen limit");
