@@ -298,9 +298,9 @@ export default function DashboardPage() {
       {/* panel saldo — inverted ink ala demo landing, flat biar gak banding */}
       <div className="relative overflow-hidden rounded-[18px] bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] p-5 panel-shadow">
         <div className="relative flex items-center justify-between gap-2">
-          <div className="text-[11px] font-medium tracking-[0.12em] uppercase opacity-70">Total Saldo · {monthLabel}</div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/15 dark:bg-black/10 px-2 py-0.5 text-[11px] font-semibold num">
+          <div className="text-[11px] font-medium tracking-[0.12em] uppercase opacity-70 min-w-0">Total Saldo · {monthLabel}</div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-white/15 dark:bg-black/10 px-2 py-0.5 text-[11px] font-semibold num">
               <Zap className="h-3 w-3" strokeWidth={2.25} /> {monthTx.length} trx
             </span>
           </div>
@@ -319,7 +319,7 @@ export default function DashboardPage() {
         <div className="relative mt-3 grid grid-cols-3 gap-2 sm:gap-3 text-[11px] border-t border-white/15 dark:border-black/15 pt-3">
           <div className="min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">MASUK</div><div className="font-semibold mt-0.5 num text-[12px] sm:text-[13px] truncate">{formatRupiahCompact(incomeMonth)}</div></div>
           <div className="border-l border-white/15 dark:border-black/15 pl-2 sm:pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">KELUAR</div><div className="font-semibold mt-0.5 num text-[12px] sm:text-[13px] truncate">{formatRupiahCompact(expenseMonth)}</div></div>
-          <div className="border-l border-white/15 dark:border-black/15 pl-2 sm:pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">SISA</div><div className="font-semibold mt-0.5 num text-[12px] sm:text-[13px] truncate">{formatRupiahCompact(sisaMonth)} · {sisaMonth < 0 ? "minus" : "aman"}</div></div>
+          <div className="border-l border-white/15 dark:border-black/15 pl-2 sm:pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">SISA</div><div className="font-semibold mt-0.5 num text-[12px] sm:text-[13px] truncate">{formatRupiahCompact(sisaMonth)}</div></div>
         </div>
       </div>
 
