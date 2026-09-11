@@ -487,7 +487,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
         <div className="page-in">{children}</div>
         <footer className="border-t hairline mt-16 pt-8 space-y-3">
           <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
-            <p className="kicker">© {new Date().getFullYear()} DuitKu · paper/ink/hairline</p>
+            <p className="kicker">© {new Date().getFullYear()} DuitKu · catat tiap rupiah</p>
             <p className="text-[12.5px] text-mute dark:text-[#7f7b75] truncate">{displayEmail}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-[12px] leading-none text-mute dark:text-[#8f8b85]">

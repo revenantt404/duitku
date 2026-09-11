@@ -233,9 +233,9 @@ export default function KategoriPage() {
                           <div className="min-w-0">
                             <div className="text-[13px] font-semibold leading-tight tracking-tight flex items-center gap-1.5 text-ink dark:text-[#e9e6e2]">
                               <span className="truncate">{c.name}</span>
-                              {readOnly && <span className="text-[10px] font-medium bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#8f8b85] border hairline px-1.5 py-0.5 rounded-full shrink-0">default</span>}
+                              {readOnly && <span className="text-[10px] font-medium bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#8f8b85] border hairline px-1.5 py-0.5 rounded-full shrink-0">bawaan</span>}
                             </div>
-                            <div className="text-[11px] text-mute dark:text-[#8f8b85] flex items-center gap-1.5"><span className="h-2 w-2 rounded-full shrink-0" style={{ background: c.color }} />{c.icon} · {c.type}</div>
+                            <div className="text-[11px] text-mute dark:text-[#8f8b85] flex items-center gap-1.5"><span className="h-2 w-2 rounded-full shrink-0" style={{ background: c.color }} />{c.type === "INCOME" ? "Pemasukan" : "Pengeluaran"}</div>
                           </div>
                         </div>
                         {!readOnly && (
@@ -273,9 +273,9 @@ export default function KategoriPage() {
                           <div className="min-w-0">
                             <div className="text-[13px] font-semibold leading-tight tracking-tight flex items-center gap-1.5 text-ink dark:text-[#e9e6e2]">
                               <span className="truncate">{c.name}</span>
-                              {readOnly && <span className="text-[10px] font-medium bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#8f8b85] border hairline px-1.5 py-0.5 rounded-full shrink-0">default</span>}
+                              {readOnly && <span className="text-[10px] font-medium bg-[#f3f1ec] dark:bg-[#222] text-mute dark:text-[#8f8b85] border hairline px-1.5 py-0.5 rounded-full shrink-0">bawaan</span>}
                             </div>
-                            <div className="text-[11px] text-mute dark:text-[#8f8b85] flex items-center gap-1.5"><span className="h-2 w-2 rounded-full shrink-0" style={{ background: c.color }} />{c.icon} · {c.type}</div>
+                            <div className="text-[11px] text-mute dark:text-[#8f8b85] flex items-center gap-1.5"><span className="h-2 w-2 rounded-full shrink-0" style={{ background: c.color }} />{c.type === "INCOME" ? "Pemasukan" : "Pengeluaran"}</div>
                           </div>
                         </div>
                         {!readOnly && (

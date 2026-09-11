@@ -226,7 +226,7 @@ export default function AnggaranPage() {
         <blockquote className="mt-2.5 font-display text-[16px] leading-snug tracking-tight italic">
           “Set limit, biar nafsu ada remnya.”
         </blockquote>
-        <figcaption className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d] mt-1.5">Progress warm — jebol ditandai badge. Di Supabase disimpan per (user, kategori, bulan, tahun).</figcaption>
+        <figcaption className="text-[13px] leading-relaxed text-mute dark:text-[#a7a39d] mt-1.5">Bar jalan tiap ada pengeluaran baru. Kalau jebol, barnya merah — rem dulu bulan ini.</figcaption>
       </figure>
 
       <Dialog open={open} onOpenChange={setOpen}>
