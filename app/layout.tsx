@@ -3,6 +3,7 @@ import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
+import { LaunchSplash } from "@/components/launch-splash";
 
 const instrument = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
@@ -62,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${instrument.variable} ${mono.variable} font-sans bg-paper text-ink antialiased`}>
-        <ThemeProvider><ToastProvider>{children}</ToastProvider></ThemeProvider>
+        <ThemeProvider><ToastProvider><LaunchSplash />{children}</ToastProvider></ThemeProvider>
       </body>
     </html>
   );
