@@ -681,7 +681,7 @@ export default function TransaksiPage() {
                     {categories.filter((c) => c.type === editType).map((c) => {
                       const active = editForm.watch("categoryId") === c.id;
                       return (
-                        <button key={c.id} type="button" onClick={() => { editForm.setValue("categoryId", c.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("categoryId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-[#f3f1ec] dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]")}>
+                        <button key={c.id} type="button" onClick={() => { editForm.setValue("categoryId", c.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("categoryId"); }} className={cn("press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-[#f3f1ec] dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]")}>
                           <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: active ? "#fff" : c.color }} aria-hidden />
                           <span className="text-[12.5px] font-medium leading-none truncate">{c.name}</span>
                         </button>
@@ -701,7 +701,7 @@ export default function TransaksiPage() {
                     <div className="grid grid-cols-2 gap-2">
                       {wallets.map((w) => {
                         const active = editForm.watch("walletId") === w.id;
-                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
                       })}
                     </div>
                   </div>
@@ -710,7 +710,7 @@ export default function TransaksiPage() {
                     <div className="grid grid-cols-2 gap-2">
                       {wallets.filter((w) => w.id !== editWalletId).map((w) => {
                         const active = editForm.watch("toWalletId") === w.id;
-                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("toWalletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("toWalletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                        return <button key={w.id} type="button" onClick={() => { editForm.setValue("toWalletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("toWalletId"); }} className={cn("press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
                       })}
                     </div>
                     {editForm.formState.isSubmitted && (editForm.formState.errors as any).toWalletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).toWalletId.message as string}</p>}
@@ -722,7 +722,7 @@ export default function TransaksiPage() {
                   <div className="grid grid-cols-2 gap-2">
                     {wallets.map((w) => {
                       const active = editForm.watch("walletId") === w.id;
-                      return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
+                      return <button key={w.id} type="button" onClick={() => { editForm.setValue("walletId", w.id, { shouldValidate: editForm.formState.isSubmitted }); if (editForm.formState.isSubmitted) editForm.trigger("walletId"); }} className={cn("press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left", active ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]")}><span className="text-[12.5px] font-medium truncate">{w.name}</span></button>;
                     })}
                   </div>
                   {editForm.formState.isSubmitted && (editForm.formState.errors as any).walletId && <p className="text-[11px] font-medium text-[#b42318] dark:text-[#fca5a5]">{(editForm.formState.errors as any).walletId.message as string}</p>}

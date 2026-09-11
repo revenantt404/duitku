@@ -193,7 +193,7 @@ export function TransactionForm({
                               if (form.formState.isSubmitted) form.trigger("categoryId");
                             }}
                             className={cn(
-                              "press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
+                              "press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
                               active
                                 ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink dark:border-[#e9e6e2]"
                                 : "bg-[#f3f1ec] dark:bg-[#1d1d1d] text-ink dark:text-[#e9e6e2] hover:bg-white dark:hover:bg-[#222]"
@@ -253,7 +253,7 @@ export function TransactionForm({
                               if (form.formState.isSubmitted) form.trigger("walletId");
                             }}
                             className={cn(
-                              "press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
+                              "press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
                               active
                                 ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink"
                                 : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]"
@@ -286,7 +286,7 @@ export function TransactionForm({
                                 if (form.formState.isSubmitted) form.trigger("toWalletId");
                               }}
                               className={cn(
-                                "press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
+                                "press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
                                 active
                                   ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink"
                                   : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]"
@@ -322,7 +322,7 @@ export function TransactionForm({
                             if (form.formState.isSubmitted) form.trigger("walletId");
                           }}
                           className={cn(
-                            "press flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
+                            "press min-w-0 flex items-center gap-2 rounded-[12px] border hairline px-3 py-2.5 text-left transition-colors",
                             active
                               ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink"
                               : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] hover:bg-[#f3f1ec] dark:hover:bg-[#222]"
