@@ -154,6 +154,10 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 .date-input::-webkit-date-and-time-value { text-align: left; }
 
 /* animations — sample 220ms drawer + page-in 150ms + shimmer 1.4s */
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px) scale(0.98); } }
+.toast-in { animation: toast-in 280ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.toast-out { animation: toast-out 220ms ease-in forwards; }
 @keyframes sheet-in { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scale-in { from { transform: scale(0.97); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -234,7 +238,7 @@ html, body { max-width: 100%; overflow-x: clip; }
 .auth-in-right { animation: auth-in-right 220ms ease-out; }
 .auth-in-left { animation: auth-in-left 220ms ease-out; }
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee, .animate-float, .animate-float-delayed, .animate-spin-slow, .animate-hero-rise, .content-in { animation: none !important; }
+  .animate-marquee, .animate-float, .animate-float-delayed, .animate-spin-slow, .animate-hero-rise, .content-in, .toast-in, .toast-out { animation: none !important; }
   .squiggle-path { animation: none !important; stroke-dashoffset: 0; }
   .auth-in-right, .auth-in-left { animation: none !important; }
 }

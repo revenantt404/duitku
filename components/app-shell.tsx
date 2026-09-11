@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, LogOut, Sun, Moon, Camera, Trash2 } from "lucide-react";
 import { BottomNav, NAV } from "@/components/bottom-nav";
+import { useToast } from "@/components/ui/toast";
 import { useIsFetching } from "@tanstack/react-query";
 
 function validAvatar(u: unknown): string | null {
@@ -44,6 +45,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const { resolved, setTheme } = useTheme();
+  const { toast } = useToast();
   const isDark = resolved === "dark";
   const isSyncing = useSyncStatus();
 
@@ -236,7 +238,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
       }
       setProfileDialogOpen(false);
     } catch (e: any) {
-      alert(e?.message || "Gagal menyimpan profil");
+      toast(e?.message || "Gagal menyimpan profil");
     } finally {
       setSaving(false);
     }
@@ -245,7 +247,7 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.size > 1_800_000) { alert("Foto maksimal 1.8MB"); return; }
+    if (f.size > 1_800_000) { toast("Foto maksimal 1.8MB"); return; }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = String(reader.result || "");

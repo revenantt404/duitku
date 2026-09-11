@@ -22,13 +22,29 @@ export function useToast() {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [leaving, setLeaving] = useState<Set<string>>(new Set());
   const timers = useRef<Map<string, number>>(new Map());
 
-  const dismiss = useCallback((id: string) => {
+  const remove = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+    setLeaving((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     const tm = timers.current.get(id);
     if (tm) { window.clearTimeout(tm); timers.current.delete(id); }
   }, []);
+
+  // keluarnya fade-out dulu (±220ms, ikut .toast-out) baru beneran dihapus
+  const dismiss = useCallback((id: string) => {
+    const prev = timers.current.get(id);
+    if (prev) window.clearTimeout(prev);
+    setLeaving((prevSet) => (prevSet.has(id) ? prevSet : new Set(prevSet).add(id)));
+    const tm = window.setTimeout(() => remove(id), 230);
+    timers.current.set(id, tm as unknown as number);
+  }, [remove]);
 
   const push = useCallback((toast: Toast) => {
     setToasts((prev) => [...prev, toast]);
@@ -72,7 +88,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className="pointer-events-auto page-in flex max-w-[min(92vw,420px)] items-center gap-3 rounded-[14px] border hairline bg-white dark:bg-[#1d1d1d] px-4 py-3 text-[13px] leading-snug text-ink dark:text-[#e9e6e2]"
+            className={`pointer-events-auto flex max-w-[min(92vw,420px)] items-center gap-3 rounded-[14px] border hairline bg-white dark:bg-[#1d1d1d] px-4 py-3 text-[13px] leading-snug text-ink dark:text-[#e9e6e2] ${leaving.has(t.id) ? "toast-out" : "toast-in"}`}
             style={{ boxShadow: "none" }}
           >
             <span className="flex-1">{t.message}</span>
