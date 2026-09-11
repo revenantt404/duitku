@@ -67,6 +67,17 @@ export default function DashboardPage() {
   const expenseMonth = useMemo(() => monthTx.filter((t) => t.type === "EXPENSE").reduce((a, b) => a + b.amount, 0), [monthTx]);
   const sisaMonth = incomeMonth - expenseMonth;
 
+  const DAILY_LIMIT = 20000;
+  const today = useMemo(() => {
+    const keyFmt = (dt: Date) => new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Jakarta" }).format(dt);
+    const now = new Date();
+    const spent = transactions
+      .filter((t) => t.type === "EXPENSE" && keyFmt(new Date(t.date)) === keyFmt(now))
+      .reduce((a, b) => a + b.amount, 0);
+    const sisa = DAILY_LIMIT - spent;
+    return { spent, sisa, pct: Math.min(100, Math.round((spent / DAILY_LIMIT) * 100)), over: sisa < 0, near: sisa >= 0 && sisa <= DAILY_LIMIT * 0.2 };
+  }, [transactions]);
+
   const donutData = useMemo(() => {
     const byCat = new Map<string, number>();
     for (const t of monthTx) if (t.type === "EXPENSE" && t.categoryId) byCat.set(t.categoryId, (byCat.get(t.categoryId) || 0) + t.amount);
@@ -311,6 +322,22 @@ export default function DashboardPage() {
           <div className="border-l border-white/15 dark:border-black/15 pl-3"><div className="tracking-[0.1em] opacity-60">SISA</div><div className="font-semibold mt-0.5 num text-[13px]">{formatRupiahCompact(sisaMonth)} · {sisaMonth < 0 ? "minus" : "aman"}</div></div>
         </div>
       </div>
+
+      {/* limit harian — tracking sekilas */}
+      <Card className="border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d]">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Hari ini</div>
+            <div className="text-[13px] font-semibold num text-ink dark:text-[#e9e6e2]">{formatRupiah(today.spent)} <span className="font-normal text-mute dark:text-[#8f8b85]">/ {formatRupiah(DAILY_LIMIT)}</span></div>
+          </div>
+          <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-white dark:bg-[#141414] border hairline">
+            <div className={`h-full rounded-full ${today.over ? "bg-[#b42318] dark:bg-[#fca5a5]" : today.near ? "bg-[#a16207] dark:bg-[#fcd34d]" : "bg-[#1a7a4a] dark:bg-[#4ade80]"}`} style={{ width: `${today.pct}%` }} />
+          </div>
+          <div className="mt-2 text-[12px] text-mute dark:text-[#8f8b85]">
+            {today.spent === 0 ? "Belum jajan apa-apa hari ini." : today.over ? `Jebol ${formatRupiah(-today.sisa)} — rem besok.` : `Sisa ${formatRupiah(today.sisa)} buat hari ini.`}
+          </div>
+        </CardContent>
+      </Card>
 
       <div>
         <SectionHead
