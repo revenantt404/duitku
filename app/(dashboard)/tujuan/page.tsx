@@ -199,7 +199,7 @@ export default function TujuanPage() {
 
                   {!done && (
                     <div className="mt-3 flex gap-2">
-                      <div className="flex-1" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTopup(g.id); } }}>
+                      <div className="flex-1 min-w-0" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTopup(g.id); } }}>
                         <RupiahInput
                           value={topupById[g.id] ? parseInt(topupById[g.id], 10) : undefined}
                           onValueChange={(v) => setTopupById((prev) => ({ ...prev, [g.id]: String(v || "") }))}

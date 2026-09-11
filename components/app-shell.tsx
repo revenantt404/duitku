@@ -424,19 +424,19 @@ export function AppShell({ children, email }: { children: React.ReactNode; email
 
             <div className="space-y-1.5">
               <Label htmlFor="profile-name">Nama tampilan</Label>
-              <Input id="profile-name" placeholder="Nama kamu" value={editingName} onChange={(e) => setEditingName(e.target.value)} maxLength={30} />
+              <Input id="profile-name" placeholder="Nama kamu" value={editingName} onChange={(e) => setEditingName(e.target.value)} maxLength={30} className="max-sm:h-11" />
               <p className="text-[11px] text-mute dark:text-[#8f8b85]">{editingName.length}/30</p>
             </div>
 
             <div className="space-y-1.5">
               <Label>Email</Label>
-              <Input value={displayEmail} disabled className="bg-[#f3f1ec] dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]" />
+              <Input value={displayEmail} disabled className="bg-[#f3f1ec] dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d] max-sm:h-11" />
               <p className="text-[11px] text-mute dark:text-[#8f8b85]">Email dari login — tidak bisa diganti di sini.</p>
             </div>
 
             <div className="flex gap-2 pt-1">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setProfileDialogOpen(false)} disabled={saving}>Batal</Button>
-              <Button type="button" className="flex-1" onClick={handleSaveProfile} disabled={saving || !editingName.trim()}>
+              <Button type="button" variant="outline" className="flex-1 max-sm:h-11" onClick={() => setProfileDialogOpen(false)} disabled={saving}>Batal</Button>
+              <Button type="button" className="flex-1 max-sm:h-11" onClick={handleSaveProfile} disabled={saving || !editingName.trim()}>
                 {saving ? "Menyimpan…" : "Simpan"}
               </Button>
             </div>

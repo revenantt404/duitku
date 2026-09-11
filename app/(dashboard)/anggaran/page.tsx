@@ -167,9 +167,9 @@ export default function AnggaranPage() {
           desc={periodLabel}
         />
         <div className="mt-3 grid grid-cols-3 gap-3">
-          <Card className="text-center"><CardContent className="p-4"><div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Total</div><div className="text-[14px] font-semibold mt-1 num truncate text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiahCompact(totalBudget)}</div></CardContent></Card>
-          <Card className="text-center"><CardContent className="p-4"><div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Terpakai</div><div className="text-[14px] font-semibold mt-1 num truncate text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiahCompact(totalSpent)}</div></CardContent></Card>
-          <Card className="text-center"><CardContent className="p-4"><div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Sisa</div><div className="text-[14px] font-semibold mt-1 num truncate text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiahCompact(totalBudget - totalSpent)}</div></CardContent></Card>
+          <Card className="text-center min-w-0"><CardContent className="p-3 sm:p-4 min-w-0"><div className="text-[10px] sm:text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase truncate">Total</div><div className="text-[14px] font-semibold mt-1 num truncate text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiahCompact(totalBudget)}</div></CardContent></Card>
+          <Card className="text-center min-w-0"><CardContent className="p-3 sm:p-4 min-w-0"><div className="text-[10px] sm:text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase truncate">Terpakai</div><div className="text-[14px] font-semibold mt-1 num truncate text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiahCompact(totalSpent)}</div></CardContent></Card>
+          <Card className="text-center min-w-0"><CardContent className="p-3 sm:p-4 min-w-0"><div className="text-[10px] sm:text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase truncate">Sisa</div><div className="text-[14px] font-semibold mt-1 num truncate text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : formatRupiahCompact(totalBudget - totalSpent)}</div></CardContent></Card>
         </div>
       </div>
 

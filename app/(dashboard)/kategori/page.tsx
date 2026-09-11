@@ -198,7 +198,7 @@ export default function KategoriPage() {
             key={o.v}
             type="button"
             onClick={() => setFilterType(o.v as any)}
-            className={`press rounded-full px-3.5 py-1.5 text-xs font-medium ${filterType === o.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]"}`}
+            className={`press inline-flex items-center justify-center rounded-full px-3.5 py-1.5 text-xs font-medium ${filterType === o.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]"}`}
           >
             {o.label}
           </button>
@@ -302,12 +302,12 @@ export default function KategoriPage() {
         <DialogContent onClose={() => setOpen(false)} className="max-w-[420px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
           <div className="shrink-0 px-6 pt-6 pb-3">
             <DialogHeader className="mb-0"><DialogTitle>{editing ? "Edit Kategori" : "Tambah Kategori"}</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">{editing ? "Ubah nama/warna/icon." : "Bikin kategori baru — pilih tipe dulu."}</p></DialogHeader>
-            <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
+            <div className="inline-flex flex-wrap max-w-full gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
               {[
                 { v: "EXPENSE", label: "Keluar" },
                 { v: "INCOME", label: "Masuk" },
               ].map((o) => (
-                <button key={o.v} type="button" onClick={() => form.setValue("type", o.v as any)} className={`press rounded-full px-3.5 py-1.5 text-xs font-medium ${form.watch("type") === o.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]"}`}>{o.label}</button>
+                <button key={o.v} type="button" onClick={() => form.setValue("type", o.v as any)} className={`press inline-flex items-center justify-center rounded-full px-3.5 py-1.5 text-xs font-medium ${form.watch("type") === o.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]"}`}>{o.label}</button>
               ))}
             </div>
           </div>

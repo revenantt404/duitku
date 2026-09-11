@@ -102,7 +102,7 @@ export function TransactionForm({
           <Plus className="h-6 w-6" strokeWidth={2.5} />
         </button>
       ) : (
-        <Button onClick={() => setOpen(true)} size="sm">
+        <Button onClick={() => setOpen(true)} size="sm" className="max-sm:h-11 max-sm:px-5">
           <Plus className="h-3.5 w-3.5" strokeWidth={1.75} /> {triggerLabel}
         </Button>
       )}
@@ -120,7 +120,7 @@ export function TransactionForm({
             </DialogHeader>
 
             {/* type segmented */}
-            <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
+            <div className="inline-flex flex-wrap max-w-full gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
               {[
                 { v: "EXPENSE", label: "Keluar", icon: ArrowDownCircle },
                 { v: "INCOME", label: "Masuk", icon: ArrowUpCircle },

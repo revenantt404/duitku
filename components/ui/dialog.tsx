@@ -64,7 +64,7 @@ export function DialogContent({ className, children, onClose, grabber = true }: 
       role="dialog"
       aria-modal="true"
       className={cn(
-        "relative bg-white dark:bg-[#1d1d1d] border hairline w-full p-6 pb-[max(20px,env(safe-area-inset-bottom))] sm:pb-6 rounded-t-[20px] sm:rounded-[18px] shadow-sm",
+        "relative bg-white dark:bg-[#1d1d1d] border hairline w-full min-w-0 break-words p-6 pb-[max(20px,env(safe-area-inset-bottom))] sm:pb-6 rounded-t-[20px] sm:rounded-[18px] shadow-sm",
         className
       )}
     >
@@ -83,13 +83,13 @@ export function DialogContent({ className, children, onClose, grabber = true }: 
   );
 }
 export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col space-y-1 text-left mb-4 pr-8", className)} {...props} />;
+  return <div className={cn("flex flex-col space-y-1 text-left mb-4 pr-8 min-w-0 break-words", className)} {...props} />;
 }
 export function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn("font-display text-[17px] font-[500] leading-none tracking-tight text-ink dark:text-[#e9e6e2]", className)} {...props} />;
+  return <h2 className={cn("font-display text-[17px] font-[500] leading-none tracking-tight text-ink dark:text-[#e9e6e2] min-w-0 break-words", className)} {...props} />;
 }
 export function DialogDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-[12px] leading-relaxed text-mute dark:text-[#a7a39d]", className)} {...props} />;
+  return <p className={cn("text-[12px] leading-relaxed text-mute dark:text-[#a7a39d] min-w-0 break-words", className)} {...props} />;
 }
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-5", className)} {...props} />;

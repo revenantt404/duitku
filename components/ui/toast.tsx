@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none fixed inset-x-0 bottom-6 z-[10000] flex flex-col items-center gap-2 px-4"
+        className="pointer-events-none fixed inset-x-0 bottom-6 max-sm:bottom-24 z-[10000] flex flex-col items-center gap-2 px-4"
       >
         {toasts.map((t) => (
           <div
@@ -89,7 +89,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               type="button"
               aria-label="Tutup"
               onClick={() => dismiss(t.id)}
-              className="shrink-0 text-mute dark:text-[#8f8b85] hover:text-ink dark:hover:text-[#e9e6e2] px-1"
+              className="shrink-0 grid place-items-center text-mute dark:text-[#8f8b85] hover:text-ink dark:hover:text-[#e9e6e2] px-1 max-sm:min-h-[44px] max-sm:min-w-[44px] max-sm:px-0"
             >
               ✕
             </button>

@@ -123,11 +123,11 @@ export function LoginForm({ autoFocus = false, onSuccess, onForgot }: { autoFocu
       <form onSubmit={handlePasswordLogin} className="space-y-3">
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="kamu@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus={autoFocus} required />
+          <Input id="email" type="email" placeholder="kamu@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus={autoFocus} required className="max-sm:h-11" />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="max-sm:h-11" />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <Button type="submit" className="h-10" disabled={loading}>

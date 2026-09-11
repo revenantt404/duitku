@@ -82,11 +82,13 @@
   button, a, [role="button"] { touch-action: manipulation; }
 
   @media (max-width: 640px) {
-    input, select, textarea { font-size: 16px !important; }
+    input, select, textarea { font-size: 16px !important; max-width: 100%; }
     button { min-height: 44px; }
-    button.h-8 { min-height: 36px; }
+    button.h-8, button.h-7 { min-height: 36px; }
     /* bottom-nav pill overrides min-height there */
     .bottom-nav button, .bottom-nav a { min-height: 0; }
+    /* checkbox / radio sentuh 44px di mobile */
+    input[type="checkbox"], input[type="radio"] { min-height: 44px; min-width: 44px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

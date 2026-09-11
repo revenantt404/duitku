@@ -317,9 +317,9 @@ export default function DashboardPage() {
           <circle cx={spark.end[0]} cy={spark.end[1]} r="3.5" fill="currentColor" />
         </svg>
         <div className="relative mt-3 grid grid-cols-3 gap-3 text-[11px] border-t border-white/15 dark:border-black/15 pt-3">
-          <div><div className="tracking-[0.1em] opacity-60">MASUK</div><div className="font-semibold mt-0.5 num text-[13px]">{formatRupiahCompact(incomeMonth)}</div></div>
-          <div className="border-l border-white/15 dark:border-black/15 pl-3"><div className="tracking-[0.1em] opacity-60">KELUAR</div><div className="font-semibold mt-0.5 num text-[13px]">{formatRupiahCompact(expenseMonth)}</div></div>
-          <div className="border-l border-white/15 dark:border-black/15 pl-3"><div className="tracking-[0.1em] opacity-60">SISA</div><div className="font-semibold mt-0.5 num text-[13px]">{formatRupiahCompact(sisaMonth)} · {sisaMonth < 0 ? "minus" : "aman"}</div></div>
+          <div className="min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">MASUK</div><div className="font-semibold mt-0.5 num text-[13px] truncate">{formatRupiahCompact(incomeMonth)}</div></div>
+          <div className="border-l border-white/15 dark:border-black/15 pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">KELUAR</div><div className="font-semibold mt-0.5 num text-[13px] truncate">{formatRupiahCompact(expenseMonth)}</div></div>
+          <div className="border-l border-white/15 dark:border-black/15 pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">SISA</div><div className="font-semibold mt-0.5 num text-[13px] truncate">{formatRupiahCompact(sisaMonth)} · {sisaMonth < 0 ? "minus" : "aman"}</div></div>
         </div>
       </div>
 

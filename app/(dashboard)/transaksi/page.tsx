@@ -355,7 +355,7 @@ export default function TransaksiPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-mute dark:text-[#8f8b85]" strokeWidth={1.75} />
               <Input placeholder="Cari: ayam, gaji, BCA..." className="pl-10 pr-10 h-10" value={q} onChange={(e) => setQ(e.target.value)} />
               {q && (
-                <button type="button" onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 grid place-items-center rounded-full border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]" aria-label="Hapus cari">
+                <button type="button" onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 max-sm:h-11 max-sm:w-11 grid place-items-center rounded-full border hairline bg-[#f3f1ec] dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]" aria-label="Hapus cari">
                   <X className="h-3.5 w-3.5" strokeWidth={2} />
                 </button>
               )}
@@ -363,7 +363,7 @@ export default function TransaksiPage() {
             <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-[128px] sm:w-[160px] shrink-0 h-10"
+              className="w-[104px] sm:w-[160px] shrink-0 h-10"
               aria-label="Urutkan transaksi"
               title="Urutkan transaksi"
             >
@@ -480,9 +480,9 @@ export default function TransaksiPage() {
               <div>
                 <div className="text-[11px] font-medium tracking-widest uppercase text-mute dark:text-[#8f8b85] mb-1.5">Dompet</div>
                 <div className="flex flex-wrap gap-1.5">
-                  <button type="button" onClick={() => setFilterWallet("ALL")} className={cn("press rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterWallet === "ALL" ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]")}>Semua dompet</button>
+                  <button type="button" onClick={() => setFilterWallet("ALL")} className={cn("press inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterWallet === "ALL" ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]")}>Semua dompet</button>
                   {wallets.map((w) => (
-                    <button key={w.id} type="button" onClick={() => setFilterWallet(w.id)} className={cn("press rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterWallet === w.id ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]")}>{w.name}</button>
+                    <button key={w.id} type="button" onClick={() => setFilterWallet(w.id)} className={cn("press inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterWallet === w.id ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#a7a39d]")}>{w.name}</button>
                   ))}
                 </div>
               </div>
@@ -506,7 +506,7 @@ export default function TransaksiPage() {
                       <button
                         type="button"
                         onClick={() => setFilterCategory("ALL")}
-                        className={cn("press shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterCategory === "ALL" ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#141414] text-mute dark:text-[#8f8b85]")}
+                        className={cn("press shrink-0 inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterCategory === "ALL" ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#141414] text-mute dark:text-[#8f8b85]")}
                       >
                         Semua
                       </button>
@@ -515,7 +515,7 @@ export default function TransaksiPage() {
                           key={c.id}
                           type="button"
                           onClick={() => setFilterCategory(c.id)}
-                          className={cn("press shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterCategory === c.id ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#141414] text-ink dark:text-[#e9e6e2]")}
+                          className={cn("press shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border hairline", filterCategory === c.id ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] border-ink" : "bg-white dark:bg-[#141414] text-ink dark:text-[#e9e6e2]")}
                         >
                           <span className="h-2 w-2 rounded-full shrink-0" style={{ background: filterCategory === c.id ? "#fff" : c.color }} />{c.name}
                         </button>
@@ -548,9 +548,9 @@ export default function TransaksiPage() {
       </Card>
 
       <div className="grid grid-cols-3 gap-3">
-        <Card className="text-center"><CardContent className="p-3 sm:p-4"><div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Transaksi</div><div className="text-[15px] font-semibold mt-1 num text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : summary.count}</div></CardContent></Card>
-        <Card className="text-center"><CardContent className="p-3 sm:p-4"><div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Masuk</div><div className="text-[13px] font-semibold mt-1 num truncate text-[#1a7a4a] dark:text-[#4ade80]" title={formatRupiah(summary.income)}>{summary.income >= 1000000 ? `Rp ${(summary.income/1000000).toFixed(1)} jt` : formatRupiah(summary.income)}</div></CardContent></Card>
-        <Card className="text-center"><CardContent className="p-3 sm:p-4"><div className="text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase">Keluar</div><div className="text-[13px] font-semibold mt-1 num truncate text-[#b42318] dark:text-[#fca5a5]" title={formatRupiah(summary.expense)}>{summary.expense >= 1000000 ? `Rp ${(summary.expense/1000000).toFixed(1)} jt` : formatRupiah(summary.expense)}</div></CardContent></Card>
+        <Card className="text-center min-w-0"><CardContent className="p-3 sm:p-4 min-w-0"><div className="text-[10px] sm:text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase truncate">Transaksi</div><div className="text-[15px] font-semibold mt-1 num truncate text-ink dark:text-[#e9e6e2]">{isLoading ? "—" : summary.count}</div></CardContent></Card>
+        <Card className="text-center min-w-0"><CardContent className="p-3 sm:p-4 min-w-0"><div className="text-[10px] sm:text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase truncate">Masuk</div><div className="text-[13px] font-semibold mt-1 num truncate text-[#1a7a4a] dark:text-[#4ade80]" title={formatRupiah(summary.income)}>{summary.income >= 1000000 ? `Rp ${(summary.income/1000000).toFixed(1)} jt` : formatRupiah(summary.income)}</div></CardContent></Card>
+        <Card className="text-center min-w-0"><CardContent className="p-3 sm:p-4 min-w-0"><div className="text-[10px] sm:text-[11px] font-medium tracking-widest text-mute dark:text-[#8f8b85] uppercase truncate">Keluar</div><div className="text-[13px] font-semibold mt-1 num truncate text-[#b42318] dark:text-[#fca5a5]" title={formatRupiah(summary.expense)}>{summary.expense >= 1000000 ? `Rp ${(summary.expense/1000000).toFixed(1)} jt` : formatRupiah(summary.expense)}</div></CardContent></Card>
       </div>
 
       <div>
@@ -647,13 +647,13 @@ export default function TransaksiPage() {
         <DialogContent onClose={() => setEditTx(null)} className="max-w-[440px] p-0 overflow-hidden border-0 sm:border hairline flex flex-col max-h-[85dvh] sm:max-h-[90vh] rounded-t-[20px] sm:rounded-[18px]">
           <div className="shrink-0 px-6 pt-6 pb-3">
             <DialogHeader className="mb-0"><DialogTitle>Edit transaksi</DialogTitle><p className="text-[12px] text-mute dark:text-[#8f8b85]">Ubah nominal, kategori, atau dompet — bentar doang.</p></DialogHeader>
-            <div className="inline-flex gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
+            <div className="inline-flex flex-wrap max-w-full gap-1 rounded-full bg-[#f3f1ec] dark:bg-[#1d1d1d] p-1 border hairline mt-4">
               {[
                 { v: "EXPENSE", label: "Keluar" },
                 { v: "INCOME", label: "Masuk" },
                 { v: "TRANSFER", label: "Transfer" },
               ].map((t) => (
-                <button key={t.v} type="button" onClick={() => { editForm.setValue("type", t.v as any); editForm.setValue("categoryId", ""); editForm.setValue("toWalletId", ""); }} className={cn("press rounded-full px-3.5 py-1.5 text-xs font-medium", editType === t.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]")}>{t.label}</button>
+                <button key={t.v} type="button" onClick={() => { editForm.setValue("type", t.v as any); editForm.setValue("categoryId", ""); editForm.setValue("toWalletId", ""); }} className={cn("press inline-flex items-center justify-center rounded-full px-3.5 py-1.5 text-xs font-medium", editType === t.v ? "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]" : "text-mute dark:text-[#8f8b85]")}>{t.label}</button>
               ))}
             </div>
           </div>
