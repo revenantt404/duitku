@@ -37,11 +37,13 @@ export async function updateSession(request: NextRequest) {
     user = null;
   }
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
+  const isRoot = request.nextUrl.pathname === "/";
   const isProtected =
     request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/transaksi") ||
     request.nextUrl.pathname.startsWith("/dompet") ||
     request.nextUrl.pathname.startsWith("/anggaran") ||
+    request.nextUrl.pathname.startsWith("/kategori") ||
     request.nextUrl.pathname.startsWith("/tujuan");
 
   if (!user && isProtected) {
@@ -49,7 +51,7 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
-  if (user && isAuthRoute) {
+  if (user && (isAuthRoute || isRoot)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
