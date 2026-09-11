@@ -96,7 +96,7 @@ export function TransactionForm({
       {fab ? (
         <button
           onClick={() => setOpen(true)}
-          className="press fixed z-20 h-14 w-14 rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center hover:bg-[#2a2a2a] dark:hover:bg-white transition-[transform,colors] right-4 lg:right-6 bottom-[calc(88px+env(safe-area-inset-bottom))] lg:bottom-6 border hairline shadow-sm"
+          className="press fixed z-20 h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414] grid place-items-center hover:bg-[#2a2a2a] dark:hover:bg-white transition-[transform,colors] right-4 lg:right-6 bottom-[calc(88px+env(safe-area-inset-bottom))] lg:bottom-6 border hairline shadow-sm"
           aria-label="Tambah transaksi"
         >
           <Plus className="h-6 w-6" strokeWidth={2.5} />

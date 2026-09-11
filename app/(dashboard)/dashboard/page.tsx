@@ -266,8 +266,8 @@ export default function DashboardPage() {
           `${monthTx.length} transaksi bulan ini`,
           sisaMonth < 0 ? "Bulan ini tekor" : "Bulan ini aman",
         ].map((t) => (
-          <span key={t} className="inline-flex items-center gap-1.5">
-            <Check className="h-3.5 w-3.5" strokeWidth={2.25} /> {t}
+          <span key={t} className="inline-flex items-start gap-1.5">
+            <Check className="h-3.5 w-3.5 shrink-0 mt-[1px]" strokeWidth={2.25} /> <span>{t}</span>
           </span>
         ))}
       />
@@ -281,14 +281,14 @@ export default function DashboardPage() {
             <div className="text-[14px] font-semibold tracking-tight text-ink dark:text-[#e9e6e2] mt-1">Beresin dulu biar nyatet &lt;10 detik</div>
             <div className="text-[12px] text-mute dark:text-[#8f8b85] mt-0.5">Udah {onboardingStep.done}/3 · beresin biar dashboard-nya hidup</div>
             <div className="mt-4 grid gap-2">
-              <Link href="/dompet" className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
-                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s1 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]"}`}>{onboardingStep.s1 ? "✓" : "1"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Buat dompet</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">BCA / Cash / GoPay</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
+              <Link href="/dompet" className="flex items-center justify-between gap-2 rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
+                <span className="flex items-center gap-2.5 min-w-0"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s1 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-ink dark:bg-[#e9e6e2] text-paper dark:text-[#141414]"}`}>{onboardingStep.s1 ? "✓" : "1"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Buat dompet</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">BCA / Cash / GoPay</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
               </Link>
-              <Link href="/kategori" className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
-                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s2 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s2 ? "✓" : "2"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Cek kategori</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Makan, Transport… tambah sendiri kalau kurang</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
+              <Link href="/kategori" className="flex items-center justify-between gap-2 rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3 hover:border-ink dark:hover:border-[#3a3a3a] transition-colors">
+                <span className="flex items-center gap-2.5 min-w-0"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s2 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s2 ? "✓" : "2"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Cek kategori</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Makan, Transport… tambah sendiri kalau kurang</span></span><span className="text-mute dark:text-[#8f8b85]">→</span>
               </Link>
-              <div className="flex items-center justify-between rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3">
-                <span className="flex items-center gap-2.5"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s3 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s3 ? "✓" : "3"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Catat transaksi pertama</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Nominal, kategori, simpan — beres</span></span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} triggerLabel="Coba" />
+              <div className="flex items-center justify-between gap-2 rounded-[12px] border hairline bg-white dark:bg-[#141414] p-3">
+                <span className="flex items-center gap-2.5 min-w-0"><span className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-bold border hairline shrink-0 ${onboardingStep.s3 ? "bg-[#1a7a4a] text-white border-[#1a7a4a] dark:bg-[#4ade80] dark:text-[#141414] dark:border-[#4ade80]" : "bg-white dark:bg-[#1d1d1d] text-mute dark:text-[#8f8b85]"}`}>{onboardingStep.s3 ? "✓" : "3"}</span><span className="text-[13px] font-medium text-ink dark:text-[#e9e6e2]">Catat transaksi pertama</span><span className="text-[11px] text-mute dark:text-[#8f8b85] hidden sm:inline">Nominal, kategori, simpan — beres</span></span><TransactionForm wallets={wallets} categories={categories as any} onSubmit={handleAddTx} triggerLabel="Coba" />
               </div>
             </div>
           </CardContent>
@@ -316,10 +316,10 @@ export default function DashboardPage() {
           />
           <circle cx={spark.end[0]} cy={spark.end[1]} r="3.5" fill="currentColor" />
         </svg>
-        <div className="relative mt-3 grid grid-cols-3 gap-3 text-[11px] border-t border-white/15 dark:border-black/15 pt-3">
-          <div className="min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">MASUK</div><div className="font-semibold mt-0.5 num text-[13px] truncate">{formatRupiahCompact(incomeMonth)}</div></div>
-          <div className="border-l border-white/15 dark:border-black/15 pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">KELUAR</div><div className="font-semibold mt-0.5 num text-[13px] truncate">{formatRupiahCompact(expenseMonth)}</div></div>
-          <div className="border-l border-white/15 dark:border-black/15 pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">SISA</div><div className="font-semibold mt-0.5 num text-[13px] truncate">{formatRupiahCompact(sisaMonth)} · {sisaMonth < 0 ? "minus" : "aman"}</div></div>
+        <div className="relative mt-3 grid grid-cols-3 gap-2 sm:gap-3 text-[11px] border-t border-white/15 dark:border-black/15 pt-3">
+          <div className="min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">MASUK</div><div className="font-semibold mt-0.5 num text-[12px] sm:text-[13px] truncate">{formatRupiahCompact(incomeMonth)}</div></div>
+          <div className="border-l border-white/15 dark:border-black/15 pl-2 sm:pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">KELUAR</div><div className="font-semibold mt-0.5 num text-[12px] sm:text-[13px] truncate">{formatRupiahCompact(expenseMonth)}</div></div>
+          <div className="border-l border-white/15 dark:border-black/15 pl-2 sm:pl-3 min-w-0"><div className="tracking-[0.1em] opacity-60 truncate">SISA</div><div className="font-semibold mt-0.5 num text-[12px] sm:text-[13px] truncate">{formatRupiahCompact(sisaMonth)} · {sisaMonth < 0 ? "minus" : "aman"}</div></div>
         </div>
       </div>
 
